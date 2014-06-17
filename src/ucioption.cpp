@@ -162,7 +162,8 @@ Option& Option::operator=(const string& v) {
 
   if (on_change)
       (*on_change)(*this);
-	  int xxx;
+int yyy;	  
+
 	  int sadfasf;
 	  
 	  int xxx;
