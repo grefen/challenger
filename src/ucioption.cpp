@@ -160,7 +160,7 @@ Option& Option::operator=(const string& v) {
   if (type != "button")
       currentValue = v;
 
-	  int x;
+
   if (on_change)
       (*on_change)(*this);
 
