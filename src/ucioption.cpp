@@ -162,11 +162,7 @@ Option& Option::operator=(const string& v) {
 
   if (on_change)
       (*on_change)(*this);
-int yyy;	  
 
-	  int sadfasf;
-	  
-	  int xxx;
   return *this;
 }
 
