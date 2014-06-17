@@ -152,7 +152,8 @@ Option& Option::operator=(const string& v) {
 
   assert(!type.empty());
 
-  if ( 1 &&   (type != "button" && v.empty())
+
+  if ((type != "button" && v.empty())
       || (type == "check" && v != "true" && v != "false")
       || (type == "spin" && (atoi(v.c_str()) < min || atoi(v.c_str()) > max)))
       return *this;
