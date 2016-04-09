@@ -1,5 +1,5 @@
 /*
-  Challenger, a UCI chinese chess playing engine based on Challenger
+  Challenger, a UCI chinese chess playing engine based on Stockfish
   
   Copyright (C) 2013-2014 grefen
 
@@ -86,26 +86,10 @@ const Bitboard BlackPawnMaskBB = Rank0BB|Rank1BB|Rank2BB|Rank3BB|Rank4BB|A5|A6|C
 CACHE_LINE_ALIGNMENT
 
 extern Bitboard RMasks[SQUARE_NB];
-//extern Bitboard RookR0[SQUARE_NB][512];
-//extern Bitboard RookRL90[SQUARE_NB][1024];
+
 extern Bitboard RookR0[SQUARE_NB][128];
 extern Bitboard RookRL90[SQUARE_NB][256];
 
-//------------------------------------
-//extern Bitboard RMagics[SQUARE_NB];
-//extern Bitboard* RAttacks[SQUARE_NB];
-//extern unsigned RShifts[SQUARE_NB];
-//
-//extern Bitboard BMasks[SQUARE_NB];
-//extern Bitboard BMagics[SQUARE_NB];
-//extern Bitboard* BAttacks[SQUARE_NB];
-//extern unsigned BShifts[SQUARE_NB];
-//-----------------------------------
-
-//extern Bitboard CannonSupperR0[SQUARE_NB][512];
-//extern Bitboard CannonSupperRL90[SQUARE_NB][1024];
-//extern Bitboard CannonControlR0[SQUARE_NB][512];
-//extern Bitboard CannonControlRL90[SQUARE_NB][1024];
 extern Bitboard CannonSupperR0[SQUARE_NB][128];
 extern Bitboard CannonSupperRL90[SQUARE_NB][256];
 extern Bitboard CannonControlR0[SQUARE_NB][128];
@@ -142,7 +126,7 @@ extern Bitboard PassedRiverBB[COLOR_NB];
 
 extern int SquareDistance[SQUARE_NB][SQUARE_NB];
 
-const Bitboard DarkSquares(0x00000000, 0xFFFFE000, 0xFFFFFFFF);// = 0xAA55AA55AA55AA55ULL;
+const Bitboard DarkSquares(0x00000000, 0xFFFFE000, 0xFFFFFFFF);
 
 extern Square pop_lsb(Bitboard* b);
 
@@ -300,30 +284,6 @@ inline bool squares_aligned(Square s1, Square s2, Square s3) {
         & (     SquareBB[s1] |      SquareBB[s2] |      SquareBB[s3]);
 }
 
-
-/// Functions for computing sliding attack bitboards. Function attacks_bb() takes
-/// a square and a bitboard of occupied squares as input, and returns a bitboard
-/// representing all squares attacked by Pt (bishop or rook) on the given square.
-//template<PieceType Pt>
-//FORCE_INLINE unsigned magic_index(Square s, Bitboard occ) {
-//
-//  Bitboard* const Masks  = Pt == ROOK ? RMasks  : BMasks;
-//  Bitboard* const Magics = Pt == ROOK ? RMagics : BMagics;
-//  unsigned* const Shifts = Pt == ROOK ? RShifts : BShifts;
-//
-//  if (Is64Bit)
-//      return unsigned(((occ & Masks[s]) * Magics[s]) >> Shifts[s]);
-//
-//  unsigned lo = unsigned(occ) & unsigned(Masks[s]);
-//  unsigned hi = unsigned(occ >> 32) & unsigned(Masks[s] >> 32);
-//  return (lo * unsigned(Magics[s]) ^ hi * unsigned(Magics[s] >> 32)) >> Shifts[s];
-//}
-//
-//template<PieceType Pt>
-//inline Bitboard attacks_bb(Square s, Bitboard occ) {
-//  return (Pt == ROOK ? RAttacks : BAttacks)[s][magic_index<Pt>(s, occ)];
-//}
-
 //help function
 inline Bitboard bitboard_rotate_l90_bb(Bitboard occ)
 {
@@ -340,22 +300,6 @@ inline Bitboard bitboard_rotate_l90_bb(Bitboard occ)
 }
 
 //
-
-//inline Bitboard rook_rank_attacks_bb(Square s, Bitboard occ)
-//{
-//	return RookR0[s][((occ>>(rank_of(s)*9)).low)&511];
-//}
-//
-//inline Bitboard rook_file_attacks_bb(Square s, Bitboard occl90)
-//{
-//	return RookRL90[s][((occl90>>(file_of(s)*10)).low)&1023];
-//}
-//
-//inline Bitboard rook_attacks_bb(Square s, Bitboard occ, Bitboard occl90)
-//{
-//    return (RookR0[s][((occ>>(rank_of(s)*9)).low)&511]) | (RookRL90[s][((occl90>>(file_of(s)*10)).low)&1023]);
-//}
-
 inline Bitboard rook_rank_attacks_bb(Square s, Bitboard occ)
 {
 	return RookR0[s][((occ>>(rank_of(s)*9 + 1)).low)&127];
@@ -371,27 +315,6 @@ inline Bitboard rook_attacks_bb(Square s, Bitboard occ, Bitboard occl90)
     return (RookR0[s][((occ>>(rank_of(s)*9 + 1)).low)&127]) | (RookRL90[s][((occl90>>(file_of(s)*10 + 1)).low)&255]);
 }
 
-//slower, not use
-//inline Bitboard rook_attacks_bb(Square s, Bitboard occ)
-//{
-//	return rook_attacks_bb(s, occ, bitboard_rotate_l90_bb(occ));
-//}
-
-//inline Bitboard cannon_rank_control_bb(Square s, Bitboard occ)
-//{
-//   return CannonControlR0[s][((occ>>(rank_of(s)*9)).low)&511];
-//}
-//
-//inline Bitboard cannon_file_control_bb(Square s, Bitboard occl90)
-//{
-//	return CannonControlRL90[s][((occl90>>(file_of(s)*10)).low)&1023];
-//}
-//
-////include capture pos, capture bitboard is result&occ
-//inline Bitboard cannon_control_bb(Square s, Bitboard occ, Bitboard occl90)
-//{
-//	return (CannonControlR0[s][((occ>>(rank_of(s)*9)).low)&511])|(CannonControlRL90[s][((occl90>>(file_of(s)*10)).low)&1023]);
-//}
 inline Bitboard cannon_rank_control_bb(Square s, Bitboard occ)
 {
    return CannonControlR0[s][((occ>>(rank_of(s)*9+ 1)).low)&127];
@@ -407,27 +330,6 @@ inline Bitboard cannon_control_bb(Square s, Bitboard occ, Bitboard occl90)
 {
 	return (CannonControlR0[s][((occ>>(rank_of(s)*9 + 1)).low)&127])|(CannonControlRL90[s][((occl90>>(file_of(s)*10 + 1)).low)&255]);
 }
-
-//slower, not use
-//inline Bitboard cannon_control_bb(Square s, Bitboard occ)
-//{
-//	return cannon_control_bb(s, occ, bitboard_rotate_l90_bb(occ));
-//}
-
-//inline Bitboard cannon_rank_supper_pin_bb(Square s, Bitboard occ)
-//{
-//	return CannonSupperR0[s][((occ>>(rank_of(s)*9)).low)&511];
-//}
-//
-//inline Bitboard cannon_file_supper_pin_bb(Square s, Bitboard occl90)
-//{
-//	return CannonSupperRL90[s][((occl90>>(file_of(s)*10)).low)&1023];
-//}
-//
-//inline Bitboard cannon_supper_pin_bb(Square s, Bitboard occ, Bitboard occl90)
-//{
-//	return  CannonSupperR0[s][((occ>>(rank_of(s)*9)).low)&511] | CannonSupperRL90[s][((occl90>>(file_of(s)*10)).low)&1023];
-//}
 
 inline Bitboard cannon_rank_supper_pin_bb(Square s, Bitboard occ)
 {
@@ -498,11 +400,6 @@ inline Bitboard knight_attackers_to_bb(Square s, Bitboard occknight, Bitboard oc
 	{
 		Square k = pop_lsb(&knights);
 
-		//if(KnightStepTo[k][KnightStepIndex[k][s]]&s && !(KnightStepLeg[k][KnightStepIndex[k][s]] & occ) && KnightStepLeg[k][KnightStepIndex[k][s]])
-		//{
-		//	b |= k; continue;			
-		//}
-
 		//KnightStepTo[k][0]&s 意思是，k攻击到s，因为k可以有四个方向
 		if(KnightStepTo[k][0]&s && !(KnightStepLeg[k][0] & occ) && KnightStepLeg[k][0])//马腿没子
 		{
@@ -535,11 +432,6 @@ inline Bitboard knight_attacks_to_bb(Square s, Bitboard occ)
 	while(from)
 	{
 		Square k = pop_lsb(&from);
-
-		//if(KnightStepTo[k][KnightStepIndex[k][s]]&s && !(KnightStepLeg[k][KnightStepIndex[k][s]] & occ) && KnightStepLeg[k][KnightStepIndex[k][s]])
-		//{
-		//	b |= k; continue;			
-		//}
 
 		if(KnightStepTo[k][0]&s && !(KnightStepLeg[k][0] & occ) && KnightStepLeg[k][0])
 		{
@@ -577,67 +469,12 @@ inline Bitboard bishop_attacks_bb(Square s, Bitboard occ)
 /// lsb()/msb() finds the least/most significant bit in a nonzero bitboard.
 /// pop_lsb() finds and clears the least significant bit in a nonzero bitboard.
 
-#ifdef USE_BSFQ
-
-#  if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-
-FORCE_INLINE Square lsb(Bitboard b) {
-  unsigned long index;
-  _BitScanForward64(&index, b);
-  return (Square) index;
-}
-
-FORCE_INLINE Square msb(Bitboard b) {
-  unsigned long index;
-  _BitScanReverse64(&index, b);
-  return (Square) index;
-}
-
-#  elif defined(__arm__)
-
-FORCE_INLINE int lsb32(uint32_t v) {
-  __asm__("rbit %0, %1" : "=r"(v) : "r"(v));
-  return __builtin_clz(v);
-}
-
-FORCE_INLINE Square msb(Bitboard b) {
-  return (Square) (63 - __builtin_clzll(b));
-}
-
-FORCE_INLINE Square lsb(Bitboard b) {
-  return (Square) (uint32_t(b) ? lsb32(uint32_t(b)) : 32 + lsb32(uint32_t(b >> 32)));
-}
-
-#  else
-
-FORCE_INLINE Square lsb(Bitboard b) { // Assembly code by Heinz van Saanen
-  Bitboard index;
-  __asm__("bsfq %1, %0": "=r"(index): "rm"(b) );
-  return (Square) index;
-}
-
-FORCE_INLINE Square msb(Bitboard b) {
-  Bitboard index;
-  __asm__("bsrq %1, %0": "=r"(index): "rm"(b) );
-  return (Square) index;
-}
-
-#  endif
-
-FORCE_INLINE Square pop_lsb(Bitboard* b) {
-  const Square s = lsb(*b);
-  *b &= *b - 1;
-  return s;
-}
-
-#else // if defined(USE_BSFQ)
-
 extern Square msb(Bitboard b);
 extern Square lsb(Bitboard b);
 extern Square pop_lsb(Bitboard* b);
 extern size_t pop_lsb(uint64_t* b);
 extern size_t msb(size_t b);
-#endif
+
 
 /// frontmost_sq() and backmost_sq() find the square corresponding to the
 /// most/least advanced bit relative to the given color.

@@ -1,6 +1,5 @@
 /*
-  Challenger, a UCI chess playing engine derived from Stockfish
-  
+  Challenger, a UCI chess playing engine derived from Stockfish 
   
 
   Challenger is free software: you can redistribute it and/or modify

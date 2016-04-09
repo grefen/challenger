@@ -1,5 +1,5 @@
 /*
-  Challenger, a UCI chinese chess playing engine based on Challenger
+  Challenger, a UCI chinese chess playing engine based on Stockfish
   
   Copyright (C) 2013-2014 grefen
 
@@ -148,7 +148,7 @@ namespace {
 /// lsb()/msb() finds the least/most significant bit in a nonzero bitboard.
 /// pop_lsb() finds and clears the least significant bit in a nonzero bitboard.
 
-#ifndef USE_BSFQ
+
 
 Square lsb(Bitboard b) { return BSFTable[bsf_index(b)]; }
 
@@ -171,25 +171,6 @@ Square msb(Bitboard b) {
   unsigned b32;
   int result = 0;
 
-  //if (b > 0xFFFFFFFF)
-  //{
-  //    b >>= 32;
-  //    result = 32;
-  //}
-
-  //b32 = unsigned(b);
-
-  //if (b32 > 0xFFFF)
-  //{
-  //    b32 >>= 16;
-  //    result += 16;
-  //}
-
-  //if (b32 > 0xFF)
-  //{
-  //    b32 >>= 8;
-  //    result += 8;
-  //}
   if(b.hight > 0)
   {
       result = 64;
@@ -268,7 +249,7 @@ size_t msb(size_t b)
 	return (Square)(result + MS1BTable[b32]);
 }
 
-#endif // ifndef USE_BSFQ
+
 
 
 /// Bitboards::print() prints a bitboard in an easily readable format to the
