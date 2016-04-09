@@ -52,9 +52,9 @@ struct CheckInfo {
 struct StateInfo {
   Key pawnKey, materialKey;
   Value npMaterial[COLOR_NB];
-  int castleRights, rule50, pliesFromNull;
+  int rule50, pliesFromNull;
   Score psq;
-  Square epSquare;
+ 
 
   Key key;
   Bitboard checkersBB;
@@ -105,6 +105,7 @@ public:
 
   // Position representation
   Bitboard pieces() const;
+  Bitboard piecesl90()const;
   Bitboard pieces(PieceType pt) const;
   Bitboard pieces(PieceType pt1, PieceType pt2) const;
   Bitboard pieces(Color c) const;
@@ -147,6 +148,7 @@ public:
   bool is_passed_pawn_push(Move m) const;
   Piece piece_moved(Move m) const;
   PieceType captured_piece_type() const;
+  bool is_in_check()const;
 
   // Piece specific
   bool pawn_is_passed(Color c, Square s) const;
@@ -264,6 +266,9 @@ inline Bitboard Position::pieces() const {
   return byTypeBB[ALL_PIECES];
 }
 
+inline Bitboard Position::piecesl90()const{
+  return occupied_rl90;
+}
 inline Bitboard Position::pieces(PieceType pt) const {
   return byTypeBB[pt];
 }
@@ -292,29 +297,10 @@ template<PieceType Pt> inline const Square* Position::list(Color c) const{
   return pieceList[c][Pt];
 }
 
-inline Square Position::ep_square() const {
-  return st->epSquare;
-}
 
 inline Square Position::king_square(Color c) const {
   return pieceList[c][KING][0];
 }
-
-//inline int Position::can_castle(CastleRight f) const {
-//  return st->castleRights & f;
-//}
-//
-//inline int Position::can_castle(Color c) const {
-//  return st->castleRights & ((WHITE_OO | WHITE_OOO) << (2 * c));
-//}
-//
-//inline bool Position::castle_impeded(Color c, CastlingSide s) const {
-//  return byTypeBB[ALL_PIECES] & castlePath[c][s];
-//}
-//
-//inline Square Position::castle_rook_square(Color c, CastlingSide s) const {
-//  return castleRookSquare[c][s];
-//}
 
 //由于子有对称性，R_ROOK与B_ROOK这种，用哪个计算都没有关系，但是像BISHOP, ADVISOR, PAWN, KING这种，不具有位置
 //的对称性，这样计算会出现问题；
@@ -363,7 +349,7 @@ inline Bitboard Position::attacks_from<ADVISOR>(Square s, Color c) const {
 
 template<>
 inline Bitboard Position::attacks_from<BISHOP>(Square s, Color c) const {
-  return bishop_attacks_bb(s,occupied);//StepAttacksBB[make_piece(c, BISHOP)][s];
+  return bishop_attacks_bb(s,occupied);
 }
 
 template<>
@@ -492,7 +478,7 @@ inline bool Position::is_chess960() const {
 inline bool Position::is_capture_or_promotion(Move m) const {
 
   assert(is_ok(m));
-  //return type_of(m) ? type_of(m) != CASTLE : !is_empty(to_sq(m));
+ 
   return !is_empty(to_sq(m));
 }
 
@@ -500,7 +486,7 @@ inline bool Position::is_capture(Move m) const {
 
   // Note that castle is coded as "king captures the rook"
   assert(is_ok(m));
-  //return (!is_empty(to_sq(m)) && type_of(m) != CASTLE) || type_of(m) == ENPASSANT;
+  
   return !is_empty(to_sq(m));
 }
 

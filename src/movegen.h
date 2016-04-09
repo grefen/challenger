@@ -54,6 +54,8 @@ private:
   ExtMove mlist[MAX_MOVES];
   ExtMove *cur, *last;
 };
+extern bool move_is_legal(const Position& pos, Move move);
+extern bool move_is_check(const Position& pos, Move move);
 
 extern void test_move_gen(Position& pos);
 #endif // #ifndef MOVEGEN_H_INCLUDED

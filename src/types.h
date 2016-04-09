@@ -104,7 +104,7 @@ const int MAX_PLY_PLUS_6 = MAX_PLY + 6;
 
 enum Move {
   MOVE_NONE,
-  MOVE_NULL = 0xffff
+  MOVE_NULL = 89
 };
 
 enum MoveType {

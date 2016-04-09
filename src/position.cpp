@@ -51,8 +51,7 @@ Value PieceValue[PHASE_NB][PIECE_NB] = {
 namespace Zobrist {
 
   Key psq[COLOR_NB][PIECE_TYPE_NB][SQUARE_NB];
-  //Key enpassant[FILE_NB];
-  //Key castle[CASTLE_RIGHT_NB];
+
   Key side;
   Key exclusion;
 }
@@ -75,12 +74,6 @@ PieceType min_attacker(const Bitboard* bb, const Square& to, const Bitboard& stm
 
   occl90 ^= square_rotate_l90_bb(lsb(b));
   occ    ^= b & ~(b.operator -(1));
-
-  //if (Pt == PAWN || Pt == BISHOP || Pt == QUEEN)
-  //    attackers |= attacks_bb<BISHOP>(to, occupied) & (bb[BISHOP] | bb[QUEEN]);
-
-  //if (Pt == ROOK || Pt == QUEEN)
-  //    attackers |= attacks_bb<ROOK>(to, occupied) & (bb[ROOK] | bb[QUEEN]);
 
   //该函数仅对slider类型的piece计算
   //炮，车和兵是该种类型
@@ -121,11 +114,12 @@ CheckInfo::CheckInfo(const Position& pos) {
   checkSq[PAWN]   = pos.attacks_from_pawn_nomask(ksq, them); 
   checkSq[KNIGHT] = knight_attacks_to_bb(ksq,pos.occupied);//knight_attackers_to_bb(ksq, pos.pieces(KNIGHT), pos.occupied);较慢
   checkSq[CANNON] = pos.attacks_from<CANNON>(ksq);//要注意跑沿着king方向移动,这里只能这样，要在使用的地方判断，比如：c--b-k**b,*处可能认为是避免将军的to位置
-  //checkSq[BISHOP] = pos.attacks_from<BISHOP>(ksq);//不会将军，可当炮架或rook的block，gen quiet check特别处理
-  //checkSq[ADVISOR]
+
   checkSq[ROOK]   = pos.attacks_from<ROOK>(ksq);//不会将军，可当炮架或rook的block，gen quiet check特别处理
   
   checkSq[KING]   = Bitboard();
+  checkSq[BISHOP] = Bitboard();
+  checkSq[ADVISOR]= Bitboard();
 }
 
 
@@ -370,6 +364,8 @@ const string Position::pretty(Move move) const {
 
   std::ostringstream ss;
 
+  ss<<"time:"<<clock()<<"\n";
+
   //if (move)
   //    ss << "\nMove: " << (sideToMove == BLACK ? ".." : "")
 	 // << move_to_san(*const_cast<Position*>(this), move)<<std::endl;
@@ -380,9 +376,9 @@ const string Position::pretty(Move move) const {
   for (Bitboard b = checkers(); b; )
       ss << square_to_string(pop_lsb(&b)) << " ";
 
-  ss << "\nLegal moves: ";
-  for (MoveList<LEGAL> it(*this); *it; ++it)
-      ss << move_to_san(*const_cast<Position*>(this), *it) << " ";
+  //ss << "\nLegal moves: ";
+  //for (MoveList<LEGAL> it(*this); *it; ++it)
+  //    ss << move_to_san(*const_cast<Position*>(this), *it) << " ";
  
   return ss.str();
 }
@@ -398,17 +394,6 @@ Bitboard Position::hidden_checkers(Square ksq, Color c) const {
   Bitboard b, pinners, result;
 
   //// Pinners are sliders that give check when pinned piece is removed
-  //pinners = (  (pieces(  ROOK, QUEEN) & PseudoAttacks[ROOK  ][ksq])
-  //           | (pieces(BISHOP, QUEEN) & PseudoAttacks[BISHOP][ksq])) & pieces(c);
-
-  //while (pinners)
-  //{
-  //    b = between_bb(ksq, pop_lsb(&pinners)) & pieces();
-
-  //    if (!more_than_one(b))
-  //        result |= b & pieces(sideToMove);
-  //}
-
    //rook于国际象棋相同
     pinners = (pieces( ROOK) & PseudoAttacks[ROOK][ksq]) & pieces(c);
 	while (pinners)
@@ -516,303 +501,11 @@ Bitboard Position::attacks_from(Piece p, Square s, Bitboard occ, Bitboard occl90
 
 bool Position::pl_move_is_legal(Move m, Bitboard pinned) const {
 
+
   assert(is_ok(m));
   assert(pinned == pinned_pieces());
 
-  Color us = sideToMove;
-  Square from = from_sq(m);
-  Square to   = to_sq(m);
-
-  assert(color_of(piece_moved(m)) == us);
-  assert(piece_on(king_square(us)) == make_piece(us, KING));
-
-  // En passant captures are a tricky special case. Because they are rather
-  // uncommon, we do it simply by testing whether the king is attacked after
-  // the move is made.
-  //if (type_of(m) == ENPASSANT)
-  //{
-  //    Color them = ~us;
-  //    Square to = to_sq(m);
-  //    Square capsq = to + pawn_push(them);
-  //    Square ksq = king_square(us);
-  //    Bitboard b = (pieces() ^ from ^ capsq) | to;
-
-  //    assert(to == ep_square());
-  //    assert(piece_moved(m) == make_piece(us, PAWN));
-  //    assert(piece_on(capsq) == make_piece(them, PAWN));
-  //    assert(piece_on(to) == NO_PIECE);
-
-  //    return   !(attacks_bb<  ROOK>(ksq, b) & pieces(them, QUEEN, ROOK))
-  //          && !(attacks_bb<BISHOP>(ksq, b) & pieces(them, QUEEN, BISHOP));
-  //}
-
-
-  //-------------------
-  {
-	  Square from = from_sq(m);
-	  Square to = to_sq(m);
-	  PieceType pt = type_of(piece_on(from));
-
-	  Bitboard pawns   = pieces(~us, PAWN);
-	  Bitboard knights = pieces(~us, KNIGHT);
-	  Bitboard cannons = pieces(~us, CANNON);
-	  Bitboard rooks = pieces(~us, ROOK);
-	  if(pawns & to)
-	  {
-
-		  pawns ^= to;
-	  }
-	  else if(knights & to)
-	  {
-
-		  knights ^= to;
-	  }
-	  else if(cannons & to)
-	  {
-
-		  cannons ^= to;
-	  }
-	  else if(rooks & to)
-	  {
-
-		  rooks ^= to;
-	  }
-
-	  Bitboard  occ    = occupied;
-	  Bitboard  occl90 = occupied_rl90;
-
-	  occl90 ^= square_rotate_l90_bb(from);
-	  occ    ^= from;
-
-	  if(type_of(piece_on(to)) == NO_PIECE_TYPE)
-	  {
-		  occl90 ^= square_rotate_l90_bb(to);
-		  occ    ^= to;
-	  }
-
-	  Square ksq = king_square(us);
-	  if(ksq == from)
-		  ksq = to;
-
-	  if((cannon_control_bb(ksq, occ,occl90) & cannons)) return false;
-	  if((rook_attacks_bb(ksq,occ,occl90)& rooks) ) return false;
-	  if((knight_attackers_to_bb(ksq, knights, occ)) ) return false;
-	  if((attacks_from_pawn_nomask(ksq, ~us) & pawns) ) return false;
-
-	  if((rook_attacks_bb(ksq,occ,occl90)& king_square(~us))) return false;//对脸
-  }
-
-  //---------
-
- 
-
-  // If the moving piece is a king, check whether the destination
-  // square is attacked by the opponent. Castling moves are checked
-  // for legality during move generation.
-  if (type_of(piece_on(from)) == KING)
-  {
-	 
-	  Bitboard  occ    = occupied;
-	  Bitboard  occl90 = occupied_rl90;
-
-	  occl90 ^= square_rotate_l90_bb(from);
-	  occ    ^= from;
-
-	  if(type_of(piece_on(to)) == NO_PIECE_TYPE)
-	  {
-		  occl90 ^= square_rotate_l90_bb(to);
-		  occ    ^= to;
-	  }
-
-	  if((attackers_to(to_sq(m),occ,occl90) & pieces(~us)))//不被对方其他子攻击
-	  {
-		  return false;
-	  }
-	  ////如果炮与king在同一条线，但是没有炮架这种情况
-	  //if((attackers_to(to_sq(m)) & pieces(~us)))//不被对方其他子攻击
-	  //{
-
-		 // return false;
-	  //}
-
-     Square   eksq    = king_square(~us);	 
-	 if((PseudoAttacks[ROOK][eksq] & to_sq(m)) &&  !(between_bb(to_sq(m), eksq) & pieces()) )
-	 {
-         return false;//不对脸
-	 }
-  }  
-
-  //不能当炮架将我方将
-  
-  Square   ksq    = king_square(us);
-  Bitboard cannons = pieces(~us, CANNON) & PseudoAttacks[ROOK][ksq];
-
-  if(ksq != from)//走的不是king
-  {
-	  while(cannons)
-	  {
-		  Bitboard b = between_bb(ksq, pop_lsb(&cannons));//炮将之间
-		  if(!(b&pieces()))//之间没有子
-		  {
-			  if(b & to)//走到炮将之间
-				  return false;
-		  }
-	  }
-  }
-
-  if(between_bb(ksq,king_square(~us)) && !(between_bb(ksq,king_square(~us)) & pieces()) )
-	  return false;//对脸
-
-  return true;
-
-
-  //下面的判断过于复杂，并且不能保证正确
-  // if ((pinned & from))
-  // {
-	 //  //炮，炮被炮牵制，如果在后面，可以吃对方的炮，在前面不能吃
-	 //  //车，如果被炮牵制，在前面，可以吃炮，
-	 //  //兵，如果在前面，可以吃炮
-	 //  //马，如果被牵制，任何地方都不合法
-	 //  //相，士，如果被牵制，任何地方都不合法
-	 //  if(type_of(piece_on(from)) == CANNON || 
-		//   type_of(piece_on(from)) == ROOK || 
-		//   type_of(piece_on(from)) == PAWN
-		//   )
-	 //  {
-		//   //被牵制,并且是被炮，车，将牵制，不是马，被马牵制，不和能与king在同行同列，后面return永远位false
-		//   if(squares_aligned(from, to, ksq))
-		//   {
-		//	   if(piece_on(to) != NO_PIECE_TYPE)
-		//	   {
-		//		   if(type_of(piece_on(from)) == CANNON)
-		//		   {
-  //                    if(between_bb(ksq, from) && (between_bb(ksq, from)&pieces()) ) 
-		//				  return false;//ksq 与 from之间有子，不是在后面，而是在前面被牵制,只能是被炮牵制，吃子不合法
-		//			 //在后面被牵制，可被车，炮牵制，如果被车牵制，吃子不合法
-		//			  if(between_bb(from, to)&pieces(~us,ROOK))
-		//				  return false;//中间有对方车
-
-		//			  //不能打到我方将的后面
-		//			  if(between_bb(from, to) & ksq)
-		//				  return false;
-  //                    //如果被king牵制，不能达到king的后面
-		//			  if(between_bb(from, to) & king_square(~us))
-		//				  return false;
-		//		   }
-		//		   else if(type_of(piece_on(from)) == ROOK || type_of(piece_on(from)) == PAWN)
-		//		   {
-  //                    //被车，炮牵制，或同时牵制
-		//			  //在后面，被车炮或同时牵制，在前面只能被炮牵制
-
-		//			   //在前面
-  //                     if(between_bb(ksq, from) && (between_bb(ksq, from)&pieces()) ) 
-		//			   {
-		//				   if(between_bb(ksq, from)&to)
-		//				      return false;//只能被炮牵制，吃的只能是牵制的炮,如果吃后面的子不合法
-		//				   else 
-		//					  return true;
-		//			   }
-
-		//			   //在后面
-		//			   //可能被炮车同时牵制
-		//			   if(type_of(piece_on(to)) == ROOK)
-		//			   {
-		//				   //可能同时牵制
-		//				   //if( (PseudoAttacks[ROOK][ksq]&pieces(~us, CANNON)) && (attacks_from<ROOK>(to)&pieces(~us, CANNON)) && (PseudoAttacks[ROOK][from]&pieces(~us, CANNON)) )
-		//				   if((attacks_from<CANNON>(from)&pieces(~us, CANNON)) && (attacks_from<ROOK>(to)&pieces(~us, CANNON)))
-		//				   {
-		//					   //king, from, to同时与对方的cannon有交集
-		//					   //if( (attacks_from<CANNON>(from)&pieces(~us, CANNON)) && (attacks_from<ROOK>(to)&pieces(~us, CANNON)) )
-		//				          return false;
-		//				   }
-		//				   else
-		//				   {
-		//					   return true;
-		//				   }
-		//			   }
-		//			   else
-		//			   {
-		//				   return false;//不可能同时牵制，而只能被炮牵制
-		//			   }
-
-		//		   }
-		//	   }
-		//	   //else if(type_of(piece_on(from)) == PAWN)
-		//	   //{
-		//		  // //被车炮牵制
-		//		  // //在前面
-		//	   //}
-		//   }
-		//   
-	 //  }
-  // }
-
-  // //如果被炮牵制，可以吃炮，可以不吃炮，复杂了
-  // //如果被马牵制，怎么走都不合法,from to ksq不可能在一条直线上所以下面的squares_aligned就可判断
-
-  // //{//for debug
-	 // // Square from = from_sq(m);
-	 // // Square to = to_sq(m);
-	 // // PieceType pt = type_of(piece_on(from));
-
-	 // // Bitboard pawns   = pieces(~us, PAWN);
-	 // // Bitboard knights = pieces(~us, KNIGHT);
-	 // // Bitboard cannons = pieces(~us, CANNON);
-	 // // Bitboard rooks = pieces(~us, ROOK);
-	 // // if(pawns & to)
-	 // // {
-		// //  //pawns ^= from;
-		// //  pawns ^= to;
-	 // // }
-	 // // else if(knights & to)
-	 // // {
-		// //  //knights ^= from;
-		// //  knights ^= to;
-	 // // }
-	 // // else if(cannons & to)
-	 // // {
-		// //  //cannons ^= from;
-		// //  cannons ^= to;
-	 // // }
-	 // // else if(rooks & to)
-	 // // {
-		// //  //rooks ^= from;
-		// //  rooks ^= to;
-	 // // }
-
-	 // // Bitboard  occ    = occupied;
-	 // // Bitboard  occl90 = occupied_rl90;
-
-	 // // occl90 ^= square_rotate_l90_bb(from);
-	 // // occ    ^= from;
-
-	 // // if(type_of(piece_on(to)) == NO_PIECE_TYPE)
-	 // // {
-		// //  occl90 ^= square_rotate_l90_bb(to);
-		// //  occ    ^= to;
-	 // // }
-
-	 // // Square ksq = king_square(us);
-	 // // if(ksq == from)
-		// //  ksq = to;
-
-	 // // if((attacks_from_pawn_nomask(s, ~us) & pawns) |
-	 // //    (knight_attackers_to_bb(ksq, knights, occ))    |
-	 // //    (rook_attacks_bb(ksq,occ,occl90)& rooks)       |
-	 // //    (cannon_control_bb(ksq, occ,occl90) & cannons)
-	 // // )
-	 // // {
-  // //        assert( !(!pinned || !(pinned & from) ||  squares_aligned(from, to_sq(m), king_square(us))) );
-	 // // }
-  // //}
-
-  // //如果被车牵制，下面的条件成立
-  //// A non-king move is legal if and only if it is not pinned or it
-  //// is moving along the ray towards or away from the king.
-  ////对于马下面的也不成立,如果车被马牵制，车可以吃马
-  //return   !pinned
-  //      || !(pinned & from)
-  //      ||  squares_aligned(from, to_sq(m), king_square(us));//地三个个判断对于炮不成立，如果炮是被牵制的，但是炮也吃着对方的子
+   return move_is_legal(*this, m);
 }
 
 
@@ -836,15 +529,6 @@ bool Position::is_pseudo_legal(const Move m) const {
   //else 
 	 // return false;
 
-  // Use a slower but simpler function for uncommon cases
-  //待定,由于没有王车异位等类型所以都是normal
-  //if (type_of(m) != NORMAL)
-  //    return MoveList<LEGAL>(*this).contains(m);
-
-
-  // Is not a promotion, so promotion piece must be empty
-  //if (promotion_type(m) - 2 != NO_PIECE_TYPE)
-  //    return false;
 
   // If the from square is not occupied by a piece belonging to the side to
   // move, the move is obviously not legal.
@@ -855,87 +539,8 @@ bool Position::is_pseudo_legal(const Move m) const {
   if (pieces(us) & to)
       return false;
 
-  // Handle the special case of a pawn move
-  //if (type_of(pc) == PAWN)
-  //{
-	 // if(!pawn_square_ok(us, from))
-		//  return false;
-
-	 // if(!pawn_square_ok(us, to))
-		//  return false;
-
-	 // if(!(attacks_from<PAWN>(from, us)&to))
-		//  return false;
-
- //     // Move direction must be compatible with pawn color
- //     int direction = to - from;
- //     //if ((us == WHITE) != (direction > 0))
- //     //    return false;
-
- //     // We have already handled promotion moves, so destination
- //     // cannot be on the 8/1th rank.
- //     //if (rank_of(to) == RANK_8 || rank_of(to) == RANK_1)
- //     //    return false;
-
- //     // Proceed according to the square delta between the origin and
- //     // destination squares.
- //     switch (direction)
- //     {
- //     //case DELTA_NW:
- //     //case DELTA_NE:
- //     //case DELTA_SW:
- //     //case DELTA_SE:
- //     // Capture. The destination square must be occupied by an enemy
- //     // piece (en passant captures was handled earlier).
-	//  case DELTA_N:
-	//  case DELTA_S:
-	//  case DELTA_W:
-	//  case DELTA_E:
- //     if (piece_on(to) == NO_PIECE || color_of(piece_on(to)) != ~us)
- //         return false;
-
- //     // From and to files must be one file apart, avoids a7h5
- ///*     if (abs(file_of(from) - file_of(to)) != 1)
- //         return false;*/
- //     break;
-
- //     case DELTA_N:
- //     case DELTA_S:
- //     // Pawn push. The destination square must be empty.
- //     if (!is_empty(to))
- //         return false;
- //     break;
-
- //     case DELTA_NN:
- //     // Double white pawn push. The destination square must be on the fourth
- //     // rank, and both the destination square and the square between the
- //     // source and destination squares must be empty.
- //     if (    rank_of(to) != RANK_4
- //         || !is_empty(to)
- //         || !is_empty(from + DELTA_N))
- //         return false;
- //     break;
-
- //     case DELTA_SS:
- //     // Double black pawn push. The destination square must be on the fifth
- //     // rank, and both the destination square and the square between the
- //     // source and destination squares must be empty.
- //     if (    rank_of(to) != RANK_5
- //         || !is_empty(to)
- //         || !is_empty(from + DELTA_S))
- //         return false;
- //     break;
-
- //     default:
- //         return false;
- //     }
- // }
-  //else if (!(attacks_from(pc, from) & to))
-  //    return false;
 
   //炮要特别处理，attacks_from计算的事cannon可以控制的区域
-  //if (!(attacks_from(pc, from) & to))
-	 // return false;
   switch (type_of(pc))
   {
   case ROOK  : 
@@ -1002,107 +607,7 @@ bool Position::is_pseudo_legal(const Move m) const {
 	  }
   }
 
-
-  // Evasions generator already takes care to avoid some kind of illegal moves
-  // and pl_move_is_legal() relies on this. So we have to take care that the
-  // same kind of moves are filtered out here.
-  if (checkers())
-  {
-      if (type_of(pc) != KING)
-      {
-          // Double check? In this case a king move is required
-          //if (more_than_one(checkers()))
-          //    return false;
-		  int checkerc = popcount<CNT_90>(checkers());
-		  if(checkerc > 2)
-			  return false;
-
-		  //-------------------------------------------
-		  {
-			  Square from = from_sq(m);
-			  Square to = to_sq(m);
-			  PieceType pt = type_of(piece_on(from));
-
-			  Bitboard pawns   = pieces(~us, PAWN);
-			  Bitboard knights = pieces(~us, KNIGHT);
-			  Bitboard cannons = pieces(~us, CANNON);
-			  Bitboard rooks = pieces(~us, ROOK);
-			  if(pawns & to)
-			  {
-				  //pawns ^= from;
-				  pawns ^= to;
-			  }
-			  else if(knights & to)
-			  {
-				  //knights ^= from;
-				  knights ^= to;
-			  }
-			  else if(cannons & to)
-			  {
-				  //cannons ^= from;
-				  cannons ^= to;
-			  }
-			  else if(rooks & to)
-			  {
-				  //rooks ^= from;
-				  rooks ^= to;
-			  }
-
-			  Bitboard  occ    = occupied;
-			  Bitboard  occl90 = occupied_rl90;
-
-			  occl90 ^= square_rotate_l90_bb(from);
-			  occ    ^= from;
-
-			  if(type_of(piece_on(to)) == NO_PIECE_TYPE)
-			  {
-				  occl90 ^= square_rotate_l90_bb(to);
-				  occ    ^= to;
-			  }
-
-			  Square ksq = king_square(us);
-			  if(ksq == from)
-				  ksq = to;
-
-			  if(between_bb(ksq,king_square(~us)) && !(between_bb(ksq,king_square(~us)) & pieces()) )
-				  return false;//对脸
-
-			  if((cannon_control_bb(ksq, occ,occl90) & cannons)) return false;
-			  if((rook_attacks_bb(ksq,occ,occl90)& rooks) ) return false;
-			  if((knight_attackers_to_bb(ksq, knights, occ)) ) return false;
-			  if((attacks_from_pawn_nomask(ksq, ~us) & pawns) ) return false;
-
-		  }
-		  //--------------------------------------
-      }
-      // In case of king moves under check we have to remove king so to catch
-      // as invalid moves like b1a1 when opposite queen is on c1.
-	  //是否要增加对脸的限制？
-      else
-	  {
-		  Bitboard  occ    = occupied;
-		  Bitboard  occl90 = occupied_rl90;
-
-		  occl90 ^= square_rotate_l90_bb(from);
-		  occ    ^= from;
-
-		  if(type_of(piece_on(to)) == NO_PIECE_TYPE)
-		  {
-			  occl90 ^= square_rotate_l90_bb(to);
-			  occ    ^= to;
-		  }
-		  
-		  //to 的位置遭到对方的攻击，注意炮的情况，炮将一条直线，将的后面将被认为是攻击的地方,所以上面专门从新计算occ
-		  if ( (attackers_to(to, occ, occl90 ) & pieces(~us)))
-              return false;
-
-		  //to的位置与对方的king对脸
-		  if( between_bb(to, king_square(~us)) && !(between_bb(to, king_square(~us)) & pieces()) )//to与对方king之间无子
-			  return false;
-	  }
-  }
-
-  return true;
+  return move_is_legal(*this, m);
 }
 
 
@@ -1181,6 +686,24 @@ bool Position::move_gives_check(Move m, const CheckInfo& ci) const {
 	  return true;
 
   return false; 
+}
+
+bool  Position::is_in_check()const{
+
+	Color us = side_to_move();
+	Square ksq = king_square(sideToMove);
+
+	Bitboard pawns   = pieces(~us, PAWN);
+	Bitboard knights = pieces(~us, KNIGHT);
+	Bitboard cannons = pieces(~us, CANNON);
+	Bitboard rooks = pieces(~us, ROOK);
+
+	if((PseudoAttacks[ROOK][ksq]& cannons) &&(cannon_control_bb(ksq, occupied,occupied_rl90) & cannons)) return true;
+	if((PseudoAttacks[ROOK][ksq]& rooks) && (rook_attacks_bb(ksq,occupied,occupied_rl90)& rooks) ) return true;
+	if( knight_attackers_to_bb(ksq, knights, occupied) ) return true;
+	if( attacks_from_pawn_nomask(ksq, us) & pawns ) return true;
+
+	return false;
 }
 
 
@@ -1283,7 +806,7 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
       prefetch((char*)thisThread->pawnsTable[st->pawnKey]);
 
       // Reset rule 50 draw counter
-      st->rule50 = 0;
+      //st->rule50 = 0;
   }
 
   // Update incremental scores
@@ -1296,53 +819,12 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   st->key = k;
 
   // Update checkers bitboard, piece must be already moved
-  st->checkersBB = Bitboard();
-
-  if (moveIsCheck)//移动这个子之后会将军，见这个函数调用处
-  {
-     // //if (type_of(m) != NORMAL)
-     // //    st->checkersBB = attackers_to(king_square(them)) & pieces(us);//暂时去除
-     // //else
-     // {
-     //     // Direct checks
-     //     if (ci.checkSq[pt] & to)
-     //         st->checkersBB |= to;
-
-     //     // Discovery checks
-     //     if (ci.dcCandidates && (ci.dcCandidates & from))
-     //     {
-     //         //不明白
-			  ////if (pt != ROOK)
-     //         //    st->checkersBB |= attacks_from<ROOK>(king_square(them)) & pieces(us, QUEEN, ROOK);
-
-     //         //if (pt != BISHOP)
-     //         //    st->checkersBB |= attacks_from<BISHOP>(king_square(them)) & pieces(us, QUEEN, BISHOP);
-     //         
-			  ////明白了：上面的代码意思是这样的；作为dcCandidates & from，不可能是ROOK或BISHOP，否则就是直接将军了；
-			  ////因为，dcCandidates是横亘在rook,bishop,queen与对方king之间的一个子；
-			  ////马不用检查了，总是成立
-			  //if (pt != ROOK)
-     //             st->checkersBB |= attacks_from<ROOK>(king_square(them)) & pieces(us, ROOK);
-			  //
-     //     }
-     // }
-       st->checkersBB = attackers_to(king_square(them)) & pieces(us);//子已经移动完毕，所以occ的计算不会出现错误，调用这个函数也就没有问题了
-  }
+  st->checkersBB = attackers_to(king_square(them)) & pieces(us);
 
   sideToMove = ~sideToMove;
 
   assert(pos_is_ok());
-  //if(!pos_is_ok())
-  //{
-	 // std::cout<<fen().c_str()<<endl;
-	 // std::cout<<move_to_chinese((*this), m).c_str()<<endl;
-  //    std::cout<<pretty(m).c_str()<<endl;
-	 // Log log;
-	 // log<<fen().c_str()<<endl;
-	 // log<<move_to_chinese((*this), m).c_str()<<endl;
-  //    log<<pretty(m).c_str()<<endl;
-	 // assert(false);
-  //}
+ 
 }
 
 
@@ -1515,7 +997,7 @@ int Position::see(Move m, int asymmThreshold) const {
 void Position::clear() {
 
   std::memset(this, 0, sizeof(Position));
-  startState.epSquare = SQ_NONE;
+ 
   st = &startState;
 
   for (int i = 0; i < PIECE_TYPE_NB; ++i)
@@ -1539,8 +1021,6 @@ Key Position::compute_key() const {
       k ^= Zobrist::psq[color_of(piece_on(s))][type_of(piece_on(s))][s];
   }
 
-  //if (ep_square() != SQ_NONE)
-  //    k ^= Zobrist::enpassant[file_of(ep_square())];
 
   if (sideToMove == BLACK)
       k ^= Zobrist::side;
@@ -1630,9 +1110,7 @@ Value Position::compute_non_pawn_material(Color c) const {
 bool Position::is_draw() const {
 
   // Draw by material?
-  //if (   !pieces(PAWN)
-  //    && (non_pawn_material(WHITE) + non_pawn_material(BLACK) <= BishopValueMg))
-  //    return true;
+
 	if( !pieces(PAWN) && !pieces(CANNON) && !pieces(KNIGHT) && !pieces(ROOK))
 		return true;
 
@@ -1691,7 +1169,7 @@ void Position::flip() {
   std::transform(f.begin(), f.end(), f.begin(), toggle_case);
 
   ss >> token; // En passant square
-  f += "-";//(token == "-" ? token : token.replace(1, 1, token[1] == '3' ? "6" : "3"));
+  f += "-";
 
   std::getline(ss, token); // Half and full moves
   f += token;

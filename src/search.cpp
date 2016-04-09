@@ -251,7 +251,7 @@ void Search::think() {
   Value margin = VALUE_ZERO;
   for (size_t i = 0; i < RootMoves.size(); ++i)
   {
-	  sync_cout << "legalmove " << move_to_uci(RootMoves[i].pv[0], RootPos.is_chess960()) <<" " <<"score "<<(int)evaluate(RootPos, margin)<< sync_endl;
+	  sync_cout<< i << " " << "legalmove " << move_to_uci(RootMoves[i].pv[0], RootPos.is_chess960()) <<" " <<"score "<<(int)evaluate(RootPos, margin)<< sync_endl;
   }
 
   Threads.timer->notify_one(); // Wake up the recurring timer
@@ -839,7 +839,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
       ext = DEPTH_ZERO;
       captureOrPromotion = pos.is_capture_or_promotion(move);
-      givesCheck = pos.move_gives_check(move, ci);
+      givesCheck = move_is_check(pos,move);//pos.move_gives_check(move, ci);
       dangerous =   givesCheck
                  || pos.is_passed_pawn_push(move);
                  /*|| type_of(move) == CASTLE;*/
@@ -1142,18 +1142,57 @@ moves_loop: // When in check and at SpNode search starts from here
     const bool PvNode = (NT == PV);
 
     assert(NT == PV || NT == NonPV);
-	if( !(InCheck == !!pos.checkers()))
+	if (pos.is_in_check())
 	{
-		pos.checkers().print();
-		std::cout<<pos.fen().c_str()<<std::endl;
-		std::cout<<pos.pretty(Move(21329)).c_str()<<std::endl;
-		std::cout<<"------------------------------------------------"<<std::endl;
-		Log log;
-		
-		log<<pos.fen().c_str()<<std::endl;
-		log<<pos.pretty(Move(21329)).c_str()<<std::endl;
-		getchar();
+		if (!InCheck)
+		{
+            Log log;
+
+			log<<"pos is incheck, but var Incheck is false"<<std::endl;
+			log<<pos.fen().c_str()<<std::endl;
+			log<<pos.pretty(Move(21329)).c_str()<<std::endl;
+		}
 	}
+	if (InCheck)
+	{
+		if (!pos.is_in_check())
+		{
+			Log log;
+			log<<"var Incheck is true, but pos is not incheck"<<std::endl;
+			log<<pos.fen().c_str()<<std::endl;
+			log<<pos.pretty(Move(21329)).c_str()<<std::endl;
+		}
+	}
+	if (pos.checkers())
+	{
+		if (!InCheck)
+		{
+			Log log;
+			log<<"checkers is not empty, but var Incheck is true"<<std::endl;
+			log<<pos.fen().c_str()<<std::endl;
+			log<<pos.pretty(Move(21329)).c_str()<<std::endl;
+		}
+
+		if(!pos.is_in_check())
+		{
+			Log log;
+			log<<"checkers is not empty, but is_in_check is false"<<std::endl;
+			log<<pos.fen().c_str()<<std::endl;
+			log<<pos.pretty(Move(21329)).c_str()<<std::endl;
+		}
+	}
+	//if( !(InCheck == !!pos.checkers()))
+	//{
+	//	//pos.checkers().print();
+	//	//std::cout<<pos.fen().c_str()<<std::endl;
+	//	//std::cout<<pos.pretty(Move(21329)).c_str()<<std::endl;
+	//	//std::cout<<"------------------------------------------------"<<std::endl;
+	//	Log log;
+	//	
+	//	log<<pos.fen().c_str()<<std::endl;
+	//	log<<pos.pretty(Move(21329)).c_str()<<std::endl;
+	//	getchar();
+	//}
     assert(InCheck == !!pos.checkers());
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
@@ -1249,7 +1288,7 @@ moves_loop: // When in check and at SpNode search starts from here
       assert(is_ok(move));
 	  
 
-      givesCheck = pos.move_gives_check(move, ci);
+      givesCheck = move_is_check(pos,move);//pos.move_gives_check(move, ci);
 
       // Futility pruning
       if (   !PvNode

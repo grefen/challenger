@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   TT.set_size(Options["Hash"]);
 
   //test_bitboard();
- // test_position();
+  //test_position();
 
   std::string args;
 
