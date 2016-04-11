@@ -409,12 +409,12 @@ Value do_evaluate(const Position& pos, Value& margin) {
   score +=  evaluate_passed_pawns<WHITE, Trace>(pos, ei)
           - evaluate_passed_pawns<BLACK, Trace>(pos, ei);
 
-  //	        //-----------for debug--------
+  ////	        //-----------for debug--------
   //ScaleFactor sfx = eg_value(score) > VALUE_DRAW ? ei.mi->scale_factor(pos, WHITE)
 	 // : ei.mi->scale_factor(pos, BLACK);
   //Value vt = interpolate(score, ei.mi->game_phase(), SCALE_FACTOR_NORMAL);
   //return pos.side_to_move() == WHITE ? vt : -vt;
-  ////----------------------------
+  //////----------------------------
   // If one side has only a king, score for potential unstoppable pawns
   //if (!pos.non_pawn_material(WHITE) || !pos.non_pawn_material(BLACK))
   //    score +=  evaluate_unstoppable_pawns(pos, WHITE, ei)

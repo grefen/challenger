@@ -249,10 +249,10 @@ void Search::think() {
                                : 100;
 
   Value margin = VALUE_ZERO;
-  for (size_t i = 0; i < RootMoves.size(); ++i)
-  {
-	  sync_cout<< i << " " << "legalmove " << move_to_uci(RootMoves[i].pv[0], RootPos.is_chess960()) <<" " <<"score "<<(int)evaluate(RootPos, margin)<< sync_endl;
-  }
+  //for (size_t i = 0; i < RootMoves.size(); ++i)
+  //{
+	 // sync_cout<< i << " " << "legalmove " << move_to_uci(RootMoves[i].pv[0], RootPos.is_chess960()) <<" " <<"score "<<(int)evaluate(RootPos, margin)<< sync_endl;
+  //}
 
   Threads.timer->notify_one(); // Wake up the recurring timer
 
