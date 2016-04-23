@@ -145,20 +145,27 @@ enum Value {
   VALUE_ENSURE_INTEGER_SIZE_P = INT_MAX,
   VALUE_ENSURE_INTEGER_SIZE_N = INT_MIN,
 
-  PawnValueMg   = 98,   PawnValueEg   = 158,//通过过河兵来增加分值，防止开局吃兵
-  BishopValueMg = 416,   BishopValueEg = 437,
-  AdvisorValueMg= 424,   AdvisorValueEg= 447,
-  KnightValueMg = 817,   KnightValueEg = 846,
-  CannonValueMg = 836,   CannonValueEg = 857,
-  RookValueMg   = 2021,  RookValueEg   = 2058,
+  //PawnValueMg   = 198,   PawnValueEg   = 258,
+  //BishopValueMg = 460,   BishopValueEg = 472,
+  //AdvisorValueMg= 454,   AdvisorValueEg= 477,
+  //KnightValueMg = 993,   KnightValueEg = 1024,
+  //CannonValueMg = 1000,   CannonValueEg = 1016,
+  //RookValueMg   = 2021,  RookValueEg   = 2058,
 
-  //PawnValueMg   = 1,   PawnValueEg   = 1,//测试pst
-  //BishopValueMg = 2,   BishopValueEg = 2,
-  //AdvisorValueMg= 2,   AdvisorValueEg= 2,
-  //KnightValueMg = 4,   KnightValueEg = 4,
-  //CannonValueMg = 4,   CannonValueEg = 4,
-  //RookValueMg   = 10,  RookValueEg   = 10,
+  //PawnValueMg   = 90,   PawnValueEg   = 344,
+  //BishopValueMg = 200,   BishopValueEg = 374,
+  //AdvisorValueMg= 495,   AdvisorValueEg= 772,
+  //KnightValueMg = 820,   KnightValueEg = 853,
+  //CannonValueMg = 958,   CannonValueEg = 827,
+  //RookValueMg   = 1823,  RookValueEg   = 2060,
 
+
+  PawnValueMg   = 89,   PawnValueEg   = 305,
+  BishopValueMg = 244,   BishopValueEg = 289,//244 289
+  AdvisorValueMg= 535,   AdvisorValueEg= 435,
+  KnightValueMg = 802,   KnightValueEg = 840,//840
+  CannonValueMg = 865,   CannonValueEg = 1281,//1281
+  RookValueMg   = 1591,  RookValueEg   = 2120,
 };
 
 enum PieceType {
@@ -315,7 +322,10 @@ inline Score make_score(int mg, int eg) { return Score((mg << 16) + eg); }
 /// Extracting the signed lower and upper 16 bits it not so trivial because
 /// according to the standard a simple cast to short is implementation defined
 /// and so is a right shift of a signed integer.
-inline Value mg_value(Score s) { return Value(((s + 0x8000) & ~0xffff) / 0x10000); }
+
+inline Value mg_value(Score s) {
+	return Value(((s + 0x8000) & ~0xffff) / 0x10000);
+}
 
 /// On Intel 64 bit we have a small speed regression with the standard conforming
 /// version, so use a faster code in this case that, although not 100% standard

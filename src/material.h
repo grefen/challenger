@@ -72,6 +72,7 @@ inline ScaleFactor Entry::scale_factor(const Position& pos, Color c) const {
         ? ScaleFactor(factor[c]) : (*scalingFunction[c])(pos);
 }
 
+extern void init();
 }
 
 #endif // #ifndef MATERIAL_H_INCLUDED

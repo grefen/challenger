@@ -22,6 +22,7 @@
 #include <cstring>
 
 #include "material.h"
+#include "ucioption.h"
 
 using namespace std;
 
@@ -35,51 +36,37 @@ namespace {
   const int NoPawnsSF[4] = { 6, 12, 32 };
 
   // Polynomial material balance parameters
-  const Value RedundantQueen = Value(320);
   const Value RedundantRook  = Value(554);
 
-  //                                  pair  pawn  bishop advisor knight cannon  rook  queen         pair  pawn  knight bishop  rook  queen
-  const int LinearCoefficients[7] = { 0,   -100, -190, -190,    100,    105,   160             };//{ 1617, -162, -1172, -190,  105,  26 };
+  //pair  pawn  bishop advisor knight cannon  rook      
+   int LinearCoefficients[7] = { 0,   -290, -153,   -156,   -975,   127,   141 };
 
-  const int QuadraticCoefficientsSameColor[][PIECE_TYPE_NB] = {
-    //// pair pawn knight bishop rook queen
-    //{   7                               }, // Bishop pair
-    //{  39,    2                         }, // Pawn
-    //{  35,  271,  -4                    }, // Knight
-    //{   7,  105,   4,    7              }, // Bishop
-    //{ -27,   -2,  46,   100,   56       }, // Rook
-    //{  58,   29,  83,   148,   -3,  -25 }  // Queen
+   int QuadraticCoefficientsSameColor[][PIECE_TYPE_NB] = {
+
 	  // pair pawn Bishop Advisor knight cannon rook 
-	  {   3,                                       }, // Bishop pair
-	  {  3,   2,                                  }, // Pawn
-	  {  3,   2,    45,                            }, //Bishop
-	  {  3,   0,    0,   45 ,                     }, //Advisor
-	  {  7,    17,   4,    9,     50 ,            }, // Knight
-	  {  3,   14,    4,    7,     200,     200,    }, // cannon
-	  {  3,  102,   6,    7,     146,     149,    256}, // Rook
+	  {  0,                                          }, // Bishop pair
+	  {  0,   25,                                    }, // Pawn
+	  {  0,  -100,  50,                              }, //Bishop
+	  {  0,   -58,  45,    -89,                      }, //Advisor
+	  {  0,    -45,  -100,     -74,    55,            }, // Knight
+	  {  0,    -90,  55,     -5,    -55,     40,      }, // cannon
+	  {  0,    10,   30,     -29,     21,    75,    25}, // Rook
 
   };
 
-  const int QuadraticCoefficientsOppositeColor[][PIECE_TYPE_NB] = {
-    //           THEIR PIECES
-    //// pair pawn knight bishop rook queen
-    //{  41                               }, // Bishop pair
-    //{  37,   41                         }, // Pawn
-    //{  10,   62,  41                    }, // Knight      OUR PIECES
-    //{  57,   64,  39,    41             }, // Bishop
-    //{  50,   40,  23,   -22,   41       }, // Rook
-    //{ 106,  101,   3,   151,  171,   41 }  // Queen
+   int QuadraticCoefficientsOppositeColor[][PIECE_TYPE_NB] = {
 
 	  // pair pawn Bishop Advisor knight cannon rook 
-	  {  41                                             }, // Bishop pair
-	  {  37,  -61,                                       }, // Pawn
-	  {  41,  -41,    0                                 }, // Bishop 
-	  {  41,  -41,    0,    0                            }, // Advisor
-	  {  30,  -62,  -25,   -15,     41                   }, // Knight      OUR PIECES
-	  {  27,   22,   30,    30,     69,    41            }, // cannon
-	  { -106,  101,   3,    -3,     163,   141,   41     }, // Rook
+	  {  0                                              }, // Bishop pair
+	  {  0,   -15,                                      }, // Pawn
+	  {  0,   -100,    65                               }, // Bishop 
+	  {  0,   -61,    24,    -95                        }, // Advisor
+	  {  0,   80,    10,   10,     -65                  }, // Knight      OUR PIECES
+	  {  0,   94,   46,  95,    -93,    32              }, // cannon
+	  {  0,   27,   5,   26,     95,    -52,   90       }, // Rook
 
   };
+
 
   // Endgame evaluation and scaling functions accessed direcly and not through
   // the function maps because correspond to more then one material hash key.
@@ -141,7 +128,7 @@ namespace {
 
   /// imbalance() calculates imbalance comparing piece count of each
   /// piece type for both colors.
-
+//   count*
   template<Color Us>
   int imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
@@ -153,10 +140,7 @@ namespace {
     // Redundancy of major pieces, formula based on Kaufman's paper
     // "The Evaluation of Material Imbalances in Chess"
     if (pieceCount[Us][ROOK] > 0)
-        value -=  RedundantRook * (pieceCount[Us][ROOK] - 1);
-               /* + RedundantQueen * pieceCount[Us][QUEEN];*/
-	else if(pieceCount[Us][ROOK] == 0)
-		value -=  RedundantRook ;
+        value -=  RedundantRook * (pieceCount[Us][ROOK] - 1);               
 
     // Second-degree polynomial material imbalance by Tord Romstad
     for (pt1 = NO_PIECE_TYPE; pt1 <= ROOK; pt1++)
@@ -180,6 +164,42 @@ namespace {
 
 namespace Material {
 
+	//
+	void init()
+	{
+		for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+		{
+			char buf[256] = {0};
+			sprintf(buf, "LinearCoefficients[%d]",pt1);
+
+            LinearCoefficients[pt1] = (int)Options[buf];
+		}
+
+		for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+		{
+			for (int pt2 = PAWN; pt2<= pt1; ++pt2)
+			{
+				char buf[256] = {0};
+				sprintf(buf, "QuadraticCoefficientsSameColor[%d][%d]",pt1, pt2);				
+
+                QuadraticCoefficientsSameColor[pt1][pt2] = (int)Options[buf];
+			}
+
+		}
+
+		for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+		{
+			for (int pt2 = PAWN; pt2<= pt1; ++pt2)
+			{
+				char buf[256] = {0};
+				sprintf(buf, "QuadraticCoefficientsOppositeColor[%d][%d]",pt1, pt2);
+
+                QuadraticCoefficientsOppositeColor[pt1][pt2] = (int)Options[buf];
+			}
+
+		}
+	}
+
 /// Material::probe() takes a position object as input, looks up a MaterialEntry
 /// object, and returns a pointer to it. If the material configuration is not
 /// already present in the table, it is computed and stored there, so we don't
@@ -200,7 +220,7 @@ Entry* probe(const Position& pos, Table& entries, Endgames& endgames) {
   e->key = key;
   e->factor[WHITE] = e->factor[BLACK] = (uint8_t)SCALE_FACTOR_NORMAL;
   e->gamePhase = game_phase(pos);
-
+#if 0
   // Let's look if we have a specialized evaluation function for this
   // particular material configuration. First we look for a fixed
   // configuration one, then a generic one if previous search failed.
@@ -345,18 +365,18 @@ Entry* probe(const Position& pos, Table& entries, Endgames& endgames) {
 
       e->spaceWeight = make_score(minorPieceCount * minorPieceCount, 0);
   }
-
+#endif
   // Evaluate the material imbalance. We use PIECE_TYPE_NONE as a place holder
   // for the bishop pair "extended piece", this allow us to be more flexible
   // in defining bishop pair bonuses.
   //NO_PIECE_TYPE, PAWN, BISHOP, ADVISOR, KNIGHT, CANNON, ROOK, KING,
   const int pieceCount[COLOR_NB][PIECE_TYPE_NB] = {
-  { pos.count<KNIGHT>(WHITE) > 1, pos.count<PAWN>(WHITE), pos.count<BISHOP>(WHITE),pos.count<ADVISOR>(WHITE),pos.count<KNIGHT>(WHITE),
+  { 0, pos.count<PAWN>(WHITE), pos.count<BISHOP>(WHITE),pos.count<ADVISOR>(WHITE),pos.count<KNIGHT>(WHITE),
     pos.count<CANNON>(WHITE)    , pos.count<ROOK>(WHITE)},
-  { pos.count<KNIGHT>(BLACK) > 1, pos.count<PAWN>(BLACK), pos.count<BISHOP>(BLACK),pos.count<ADVISOR>(BLACK),pos.count<KNIGHT>(BLACK),
+  { 0, pos.count<PAWN>(BLACK), pos.count<BISHOP>(BLACK),pos.count<ADVISOR>(BLACK),pos.count<KNIGHT>(BLACK),
     pos.count<CANNON>(BLACK)    , pos.count<ROOK>(BLACK)} };
 
-  e->value = 0;//(int16_t)((imbalance<WHITE>(pieceCount) - imbalance<BLACK>(pieceCount)) / 16);
+  e->value = (int16_t)((imbalance<WHITE>(pieceCount) - imbalance<BLACK>(pieceCount)) / 16);
   return e;
 }
 

@@ -32,6 +32,7 @@
 #include "rkiss.h"
 #include "thread.h"
 #include "tt.h"
+#include "ucioption.h"
 
 using std::string;
 using std::cout;
@@ -47,6 +48,66 @@ Score psq[COLOR_NB][PIECE_TYPE_NB][SQUARE_NB];
 Value PieceValue[PHASE_NB][PIECE_NB] = {
 { VALUE_ZERO, PawnValueMg, BishopValueMg, AdvisorValueMg, KnightValueMg, CannonValueMg, RookValueMg},
 { VALUE_ZERO, PawnValueEg, BishopValueEg, AdvisorValueEg, KnightValueEg, CannonValueEg, RookValueEg} };
+
+namespace Postion{
+
+	void init_psq_value(){
+
+		PieceValue[MG][PAWN] = (Value)(int)Options["PawnValueMg"];
+		PieceValue[EG][PAWN] = (Value)(int)Options["PawnValueEg"];
+
+		PieceValue[MG][BISHOP] = (Value)(int)Options["BishopValueMg"];
+		PieceValue[EG][BISHOP] = (Value)(int)Options["BishopValueEg"];
+
+		PieceValue[MG][ADVISOR] = (Value)(int)Options["AdvisorValueMg"];
+		PieceValue[EG][ADVISOR] = (Value)(int)Options["AdvisorValueEg"];
+
+		PieceValue[MG][KNIGHT] = (Value)(int)Options["KnightValueMg"];
+		PieceValue[EG][KNIGHT] = (Value)(int)Options["KnightValueEg"];
+
+		PieceValue[MG][CANNON] = (Value)(int)Options["CannonValueMg"];
+		PieceValue[EG][CANNON] = (Value)(int)Options["CannonValueEg"];
+
+		PieceValue[MG][ROOK] = (Value)(int)Options["RookValueMg"];
+		PieceValue[EG][ROOK] = (Value)(int)Options["RookValueEg"];
+
+
+		//for (PieceType pt = PAWN; pt <= KING; ++pt)
+		//{
+		//	for (Square sq = SQ_A0; sq < SQUARE_NB; ++sq)
+		//	{
+
+		//		char buf[256] = {0};
+
+		//		sprintf(buf, "PSQT_MG[%d][%d]",pt, sq);
+		//		int mg = Options[buf];
+
+		//		sprintf(buf, "PSQT_EG[%d][%d]",pt, sq);
+		//           int eg = Options[buf];
+
+		//		PSQT[pt][sq] = make_score(mg, eg);
+		//	}
+
+		//}
+
+
+		for (PieceType pt = PAWN; pt <= KING; ++pt)
+		{
+			PieceValue[MG][make_piece(BLACK, pt)] = PieceValue[MG][pt];
+			PieceValue[EG][make_piece(BLACK, pt)] = PieceValue[EG][pt];
+
+			Score v = make_score(PieceValue[MG][pt], PieceValue[EG][pt]);
+
+			for (Square s = SQ_A0; s <= SQ_I9; ++s)
+			{
+				psq[WHITE][pt][ s] =  (v + PSQT[pt][s]);
+				psq[BLACK][pt][~s] = -(v + PSQT[pt][s]);
+			}
+		}
+
+	}
+}
+
 
 namespace Zobrist {
 
@@ -78,8 +139,10 @@ PieceType min_attacker(const Bitboard* bb, const Square& to, const Bitboard& stm
   //该函数仅对slider类型的piece计算
   //炮，车和兵是该种类型
   //PAWN应该是最先产生的，在后面的&之后，PAWN应该不会再有了?
-  if(Pt == PAWN || Pt == ROOK)
+  if(Pt == PAWN || Pt == ROOK){
 	  attackers |= rook_attacks_bb(to, occ, occl90) & bb[ROOK];
+	  attackers |= cannon_control_bb(to, occ, occl90) & bb[CANNON];
+  }
 
   if(Pt == CANNON)
      attackers |= cannon_control_bb(to, occ, occl90) & bb[CANNON];

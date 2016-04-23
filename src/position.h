@@ -27,6 +27,12 @@
 #include "types.h"
 
 
+namespace Postion{
+    extern void init_psq_value();
+}
+
+
+
 /// The checkInfo struct is initialized at c'tor time and keeps info used
 /// to detect if a move gives check.
 class Position;
@@ -383,17 +389,63 @@ inline Bitboard Position::discovered_check_candidates() const {
 }
 
 inline Bitboard Position::pinned_pieces() const {
-	Square      ksq =  king_square(sideToMove);
-	Bitboard result =  hidden_checkers(ksq, ~sideToMove);
-	Bitboard b, pinners;
 
-	pinners = (pieces(~sideToMove, KING) & PseudoAttacks[ROOK][ksq]);
-	while (pinners)
-	{
+	Bitboard b, pinners, result;
+	Square ksq = king_square(sideToMove);
+
+	// Pinners are sliders that give check when a pinned piece is removed
+
+	//rook
+	pinners = pieces(~sideToMove, ROOK) & PseudoAttacks[ROOK][ksq];
+	while (pinners) {
 		b = between_bb(ksq, pop_lsb(&pinners)) & pieces();
 
 		if (!more_than_one(b))
-			result |= b & pieces(sideToMove);//被对方将牵制的子
+			result |= b & pieces(sideToMove);
+	}
+
+	//cannon
+	pinners = pieces(~sideToMove, CANNON) & PseudoAttacks[ROOK][ksq];
+	while (pinners) {
+		b = between_bb(ksq, pop_lsb(&pinners)) & pieces();
+
+		if (equal_to_two(b))
+			result |= b & pieces(sideToMove);
+	}
+
+	//knight
+	pinners = pieces(~sideToMove, KNIGHT);
+	while(pinners)
+	{
+		Square s = pop_lsb(&pinners);
+		if(KnightStepTo[s][0] & ksq )
+		{
+			result |= KnightStepLeg[s][0] & pieces(sideToMove);
+		}
+
+		if(KnightStepTo[s][1] & ksq )
+		{
+			result |= KnightStepLeg[s][1] & pieces(sideToMove);
+		}
+
+		if(KnightStepTo[s][2] & ksq  )
+		{
+			result |= KnightStepLeg[s][2] & pieces(sideToMove);
+		}
+
+		if(KnightStepTo[s][3] & ksq  )
+		{
+			result |= KnightStepLeg[s][3] & pieces(sideToMove);
+		}
+	}
+
+	//king, face to face
+	pinners = pieces(~sideToMove, KING) & PseudoAttacks[ROOK][ksq];
+	while (pinners) {
+		b = between_bb(ksq, pop_lsb(&pinners)) & pieces();
+
+		if (!more_than_one(b))
+			result |= b & pieces(sideToMove);
 	}
 
 	return result;

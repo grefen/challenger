@@ -302,6 +302,7 @@ finalize:
   //{
 	 // sync_cout << "legalmove " << move_to_uci(RootMoves[i].pv[0], RootPos.is_chess960()) <<" " <<"score " << RootMoves[i].prevScore << sync_endl;
   //}
+  
 }
 
 

@@ -37,30 +37,15 @@ struct Entry {
   Score pawns_value() const { return value; }
   Bitboard pawn_attacks(Color c) const { return pawnAttacks[c]; }
   Bitboard passed_pawns(Color c) const { return passedPawns[c]; }
-  Bitboard candidate_pawns(Color c) const { return candidatePawns[c]; }
-  int pawns_on_same_color_squares(Color c, Square s) const { return pawnsOnSquares[c][!!(DarkSquares & s)]; }
   int semiopen(Color c, File f) const { return semiopenFiles[c] & (1 << int(f)); }
   int semiopen_on_side(Color c, File f, bool left) const {
 
     return semiopenFiles[c] & (left ? ((1 << int(f)) - 1) : ~((1 << int(f+1)) - 1));
   }
 
-  template<Color Us>
-  Score king_safety(const Position& pos, Square ksq)  {
-
-    return kingSquares[Us] == ksq /*&& castleRights[Us] == pos.can_castle(Us)*/
-         ? kingSafety[Us] : update_safety<Us>(pos, ksq);
-  }
-
-  template<Color Us>
-  Score update_safety(const Position& pos, Square ksq);
-
-  template<Color Us>
-  Value shelter_storm(const Position& pos, Square ksq);
 
   Key key;
   Bitboard passedPawns[COLOR_NB];
-  Bitboard candidatePawns[COLOR_NB];
   Bitboard pawnAttacks[COLOR_NB];
   Square kingSquares[COLOR_NB];
   int minKPdistance[COLOR_NB];

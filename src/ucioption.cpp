@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
+#include "psqtab.h"
 
 using std::string;
 
@@ -40,6 +41,9 @@ void on_eval(const Option&) { Eval::init(); }
 void on_threads(const Option&) { Threads.read_uci_options(); }
 void on_hash_size(const Option& o) { TT.set_size(o); }
 void on_clear_hash(const Option&) { TT.clear(); }
+
+void on_material(const Option&) { Material::init(); }
+void on_pst_value(const Option&) { Postion::init_psq_value();}
 
 
 /// Our case insensitive less() function as required by UCI protocol
@@ -87,6 +91,113 @@ void init(OptionsMap& o) {
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
   o["Piece Structure"]             = Option(100, 0, 200, on_eval);
+
+
+  //o["PawnValueMg"] = Option(198, 50, 500, on_pst_value);
+  //o["PawnValueEg"] = Option(258, 50, 500, on_pst_value);
+  //o["BishopValueMg"] = Option(416, 200, 800, on_pst_value);
+  //o["BishopValueEg"] = Option(437, 200, 800, on_pst_value);
+  //o["AdvisorValueMg"] = Option(424, 200, 800, on_pst_value);
+  //o["AdvisorValueEg"] = Option(447, 200, 800, on_pst_value);
+  //o["KnightValueMg"] = Option(817, 500, 1500, on_pst_value);
+  //o["KnightValueEg"] = Option(846, 500, 1500, on_pst_value);
+  //o["CannonValueMg"] = Option(836, 500, 1500, on_pst_value);
+  //o["CannonValueEg"] = Option(857, 500, 1500, on_pst_value);
+  //o["RookValueMg"] = Option(2021, 1000, 2800, on_pst_value);
+  //o["RookValueEg"] = Option(2058, 1000, 2800, on_pst_value);
+
+  //Log log;
+
+  //log<<"name,   init,  max,  min,  c_end,  r_end,  elod"<<std::endl;
+
+  //const int LinearCoefficients[7] = { 0,   -162, -190,   -190,   -1000,   105,   26 };
+  //for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+  //{
+	 // char buf[256] = {0};
+	 // sprintf(buf, "LinearCoefficients[%d]",pt1);
+	 // o[buf] = Option(LinearCoefficients[pt1], -1000, 1000, on_material);
+
+	 // //char text[1024]={0};
+	 // //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",buf, LinearCoefficients[pt1], 1000,-1000,50, 1, 0);
+	 // //log<<text<<std::endl;
+  //}
+
+  //const int QuadraticCoefficientsSameColor[][PIECE_TYPE_NB] = {
+	 // // pair pawn Bishop Advisor knight cannon rook 
+	 // {  0,                                       }, // Bishop pair
+	 // {  0,   2,                                  }, // Pawn
+	 // {  0,   3,    46,                           }, //Bishop
+	 // {  0,   0,    0,    45,                     }, //Advisor
+	 // {  0,   17,   0,    44,    20,              }, // Knight
+	 // {  0,   5,  11,    5,      50,     18,      }, // cannon
+	 // {  0,  15,   6,    7,      15,     30,    40}, // Rook
+
+  //};
+
+  //for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+  //{
+	 // for (int pt2 = PAWN; pt2<= pt1; ++pt2)
+	 // {
+  //        char buf[256] = {0};
+  //        sprintf(buf, "QuadraticCoefficientsSameColor[%d][%d]",pt1, pt2);
+
+  //        o[buf] = Option(QuadraticCoefficientsSameColor[pt1][pt2], -100, 100, on_material);
+
+		//  //char text[1024]={0};
+		//  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",buf, QuadraticCoefficientsSameColor[pt1][pt2], 1000,-1000,50, 1, 0);
+		//  //log<<text<<std::endl;
+	 // }
+	 // 
+  //}
+
+  //const int QuadraticCoefficientsOppositeColor[][PIECE_TYPE_NB] = {
+	 // // pair pawn Bishop Advisor knight cannon rook 
+	 // {  0                                              }, // Bishop pair
+	 // {  0,   41,                                       }, // Pawn
+	 // {  0,   -8,    0                                  }, // Bishop 
+	 // {  0,   -8,    0,    0                            }, // Advisor
+	 // {  0,   6,    -5,   -5,     41                    }, // Knight      OUR PIECES
+	 // {  0,   22,   -20,  -10,    -5,    41             }, // cannon
+	 // {  0,   40,   30,   30,     50,    6,   41        }, // Rook
+
+  //};
+
+  //for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
+  //{
+	 // for (int pt2 = PAWN; pt2<= pt1; ++pt2)
+	 // {
+		//  char buf[256] = {0};
+		//  sprintf(buf, "QuadraticCoefficientsOppositeColor[%d][%d]",pt1, pt2);
+
+		//  o[buf] = Option(QuadraticCoefficientsOppositeColor[pt1][pt2], -100, 100, on_material);
+
+		//  //char text[1024]={0};
+		//  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",buf, QuadraticCoefficientsOppositeColor[pt1][pt2], 1000,-1000,50, 1, 0);
+		//  //log<<text<<std::endl;
+	 // }
+
+  //}
+  
+
+
+  //for (PieceType pt = PAWN; pt <= KING; ++pt)
+  //{
+	 // for (Square sq = SQ_A0; sq < SQUARE_NB; ++sq)
+	 // {
+
+		//  char buf[256] = {0};
+		//  sprintf(buf, "PSQT_MG[%d][%d]",pt, sq);
+
+		//  int v = (int)mg_value(PSQT[pt][sq]);
+  //        o[buf] = Option(v, -200,200);
+		//  sprintf(buf, "PSQT_EG[%d][%d]",pt, sq);
+
+		//  v = (int)eg_value(PSQT[pt][sq]);
+		//  o[buf] = Option(v, -200,200);
+	 // }
+	 // 
+  //}
+  
 }
 
 

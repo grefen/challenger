@@ -102,6 +102,7 @@ namespace {
   // like "KBPKN". The trick here is to first forge an ad-hoc fen string
   // and then let a Position object to do the work for us. Note that the
   // fen string could correspond to an illegal position.
+  //根据"KPK"这样的字符串计算hashkey
   Key key(const string& code, Color c) {
 
     assert(code.length() > 0 && code.length() < 8);
@@ -155,7 +156,7 @@ Endgames::~Endgames() {
 
 template<EndgameType E>
 void Endgames::add(const string& code) {
-
+  //init m1 and m2
   map((Endgame<E>*)0)[key(code, WHITE)] = new Endgame<E>(WHITE);
   map((Endgame<E>*)0)[key(code, BLACK)] = new Endgame<E>(BLACK);
 }
