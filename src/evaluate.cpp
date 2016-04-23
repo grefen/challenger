@@ -111,17 +111,13 @@ namespace {
   // game, indexed by piece type and number of attacked squares not occupied by
   // friendly pieces.
   //PAWN, BISHOP, ADVISOR, KNIGHT, CANNON, ROOK, KING
-  const Score MobilityBonus[][32] = {
-     {}, {},//Pawn
-  	 { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Bishops
-	 { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Advisor
-     { S(-35,-30), S(-20,-20), S(-20,-20), S( 0,  0), S(0, 0), S(15, 10), // Knights
-       S( 15, 10), S( 25, 12), S(25, 12) },
-	 { S( -13, -18), S( 2,  4), S( 4,  4), S(6, 6), S(8, 8),S(10, 10),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12)},// Cannon
-     { S(-20,-20), S(-18,-18), S(-16,  -16), S( -10, -10), S( -8, -8), S(-4, -4),
-       S( 0, 0), S( 4, 2), S(8, 4), S(12,6), S(16,8), S(20,10),
-       S( 24,12), S( 24,12), S(24,12), S(24,12), S(24,12), S(24,12),
-	   S(24,12), S(24,12), S(24,12), S(24,12)}, // Rooks 
+  Score MobilityBonus[][32] = {
+	  {}, {},//Pawn
+	  { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Bishops
+	  { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Advisor
+	  { S(-35,-30), S(-20,-20), S(-20,-20), S( 0,  0), S(0, 0), S(15, 10),S( 15, 10), S( 25, 12), S(25, 12) },//knight
+	  { S( -10, -10), S( 2,  4), S( 4,  4), S(6, 6), S(8, 8),S(10, 10),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12)},// Cannon
+	  { S(-20,-20), S(-18,-18), S(-16,-16), S( -10,-10), S( -8,-8), S(-4,-4),S( 0, 0), S( 4, 2), S(8, 4), S(12,6), S(16,8), S(20,10),S( 24,12), S( 24,12), S(24,12), S(24,12), S(24,12), S(24,12)}, // Rooks 
   };
 
   // Outpost[PieceType][Square] contains bonuses of knights and bishops, indexed
@@ -171,31 +167,38 @@ namespace {
   #undef S
 
   const Score Tempo            = make_score(24, 11);
-  const Score BishopPin        = make_score(66, 11);
-  const Score RookPin          = make_score(66, 11);
-  const Score CannonPin        = make_score(16, 11);
-  const Score RookOnPawn       = make_score(10, 28);
-  const Score RookOpenFile     = make_score(53, 21);
-  const Score RookSemiopenFile = make_score(39, 20);
-  const Score BishopPawns      = make_score( 8, 12);
-  const Score MinorBehindPawn  = make_score(16,  0);
-  const Score UndefendedMinor  = make_score(10, 10);
-  const Score TrappedRook      = make_score(90,  0);
-  const Score Unstoppable      = make_score( 0, 20);
 
-  const Score RookPinRook      = make_score(40, 20);
-  const Score RookBehindKing   = make_score(20, 30);
-  const Score RookDubRook      = make_score(10, 10);
-  const Score RookKnight       = make_score(15, 15);
-  const Score RookCannon       = make_score(20, 10);
+  Score RookPin          = make_score(26, 31);
+  Score CannonPin        = make_score(16, 11);
 
-  const Score CannonPinRook    = make_score(10, 20);
-  const Score CannonPinKnight  = make_score(20, 10);
-  const Score CannonPinBishop  = make_score(3, 5);
-  const Score CannonKingKnight = make_score(10, 5);
-  const Score CannonKingRook   = make_score(20, 15);
+  Score RookOnPawn       = make_score(10, 28);
+  Score RookOpenFile     = make_score(53, 21);
 
-  const Score KnightEdgeRook   = make_score(5, 15);
+  Score RookPinRook      = make_score(20, 20);
+
+  Score CannonPinRook    = make_score(10, 10);
+  Score CannonPinKnight  = make_score(10, 10);
+  Score CannonPinBishop  = make_score(5, 3);
+
+  Score KnightLegPawn    = make_score(16,  0);
+
+  //////////////////////////////////////////////////////////////////////////
+  
+  //const Score CannonKingKnight = make_score(10, 5);
+  //const Score CannonKingRook   = make_score(20, 15);
+
+  //const Score BishopPawns      = make_score( 8, 12);
+  //const Score MinorBehindPawn  = make_score(16,  0);
+  //const Score UndefendedMinor  = make_score(10, 10);
+  //const Score TrappedRook      = make_score(90,  0);
+
+  //const Score RookBehindKing   = make_score(20, 30);
+  //const Score RookDubRook      = make_score(10, 10);
+  //const Score RookKnight       = make_score(15, 15);
+  //const Score RookCannon       = make_score(20, 10);
+
+  //const Score KnightEdgeRook   = make_score(5, 15);
+
 
 
   // The SpaceMask[Color] contains the area of the board which is considered
@@ -262,9 +265,7 @@ namespace {
   Score evaluate_passed_pawns(const Position& pos, const EvalInfo& ei);
 
   template<Color Us>
-  int evaluate_space(const Position& pos, const EvalInfo& ei);
-
-  Score evaluate_unstoppable_pawns(const Position& pos, Color us, const EvalInfo& ei);
+  int evaluate_space(const Position& pos, const EvalInfo& ei);  
 
   Value interpolate(const Score& v, Phase ph, ScaleFactor sf);
   Score apply_weight(Score v, Score w);
@@ -315,6 +316,47 @@ namespace Eval {
         KingDanger[1][i] = apply_weight(make_score(t, 0), Weights[KingDangerUs]);
         KingDanger[0][i] = apply_weight(make_score(t, 0), Weights[KingDangerThem]);
     }
+  }
+
+  void init_variables()
+  {
+	  for (int pt1 = KNIGHT; pt1 <= ROOK; ++pt1)
+	  {
+		  for (int c = 0; c <= 17; ++c)
+		  {
+			  int m = 0;
+			  int e = 0;
+
+			  char buf[256] = {0};
+			  char text[1024]={0};
+
+			  sprintf(buf, "MobilityBonusM[%d][%d]",pt1,c);
+              m = (int)Options[buf];
+
+			  sprintf(buf, "MobilityBonusE[%d][%d]",pt1,c);
+			  e = (int)Options[buf];
+
+			  MobilityBonus[pt1][c] = make_score(m, e);
+
+		  }
+	  }
+
+	  {
+
+#define GEN_CODE(namem,namee,gdata) {int m = (int)Options[namem];int e = (int)Options[namee];gdata = make_score(m, e);}
+
+		  GEN_CODE("RookPinM","RookPinE", RookPin);
+		  GEN_CODE("CannonPinM","CannonPinE", CannonPin);
+		  GEN_CODE("RookOnPawnM","RookOnPawnE", RookOnPawn);
+		  GEN_CODE("RookOpenFileM","RookOpenFileE", RookOpenFile);
+		  GEN_CODE("RookPinRookM","RookPinRookE", RookPinRook);
+		  GEN_CODE("CannonPinRookM","CannonPinRookE", CannonPinRook);
+		  GEN_CODE("CannonPinKnightM","CannonPinKnightE", CannonPinKnight);
+		  GEN_CODE("CannonPinBishopM","CannonPinBishopE", CannonPinBishop);
+		  GEN_CODE("KnightLegPawnM","KnightLegPawnE", KnightLegPawn);
+
+
+	  }
   }
 
 } // namespace Eval
@@ -485,29 +527,27 @@ Value do_evaluate(const Position& pos, Value& margin) {
 					(ei.attackedBy[Us][CANNON] & s) ||
 					(ei.attackedBy[Us][PAWN] & s))
                 {
-					bonus += bonus + bonus / 2;
+					bonus += bonus ;
                 }
 				else if (!(ei.attackedBy[Them][ROOK] & s))
 				{
-					bonus += bonus + bonus / 2;
-				}      
-				
+					bonus += bonus;
+				}				
 			}
 			else
 			{
                if (ei.attackedBy[Us][PAWN] & s)
                {
-                  bonus += bonus;
+                  bonus += bonus/2;
                }
 			   else if ((ei.attackedBy[Us][KNIGHT] & s) ||
 				   (ei.attackedBy[Us][CANNON] & s))
 			   {
-                  bonus += bonus/2;
+                  bonus += bonus/4;
 			   }
 			}
-		}		
+		}
 	}
-	
 
     return make_score(bonus, bonus);
   }
@@ -567,32 +607,77 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // Decrease score if we are attacked by an enemy pawn. Remaining part
         // of threat evaluation must be done later when we have full attack info.
         if (ei.attackedBy[Them][PAWN] & s)
-            score -= ThreatenedByPawn[Piece];
+		{
+			score -= ThreatenedByPawn[Piece];
+		}
 
         // Otherwise give a bonus if we can pin a piece or can
         // give a discovered check through an x-ray attack.
-        else if (    Piece == ROOK
-                 && (PseudoAttacks[Piece][pos.king_square(Them)] & s)
-                 && !more_than_one(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
+        else if ( Piece == ROOK)
 		{         
-			score += RookPin;
+			//牵制对方的king
+			if ((PseudoAttacks[Piece][pos.king_square(Them)] & s) && !more_than_one(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
+			{
+				score += RookPin;
+			}
+
+			//牵制对方的ROOK
+			if (cannon_control_bb(s, pos.occupied, pos.occupied_rl90) & pos.pieces(Them, ROOK))
+			{
+				score += RookPinRook;
+			}
+
+            //在卒林线
+			if (relative_rank(Us, s) >= RANK_5)
+			{
+				// Major piece attacking enemy pawns on the same rank/file
+				Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
+				if (pawns)
+					score += popcount<CNT_90>(pawns) * (RookOnPawn);
+			}
+
+			//通路车
+			if (popcount<CNT_90>(FileBB[file_of(s)] & b) > 4)
+			{
+				score += RookOpenFile;
+			}			
+			
 		}
 		//炮的牵制
 		else if( Piece == CANNON)
 		{
-			//控制区域
- 			
-			//炮的牵制 
+
+			//炮的牵制king 
 			if((PseudoAttacks[Piece][pos.king_square(Them)] & s))
-			   if(equal_to_two(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
-				score += CannonPin;
+			{
+				if(equal_to_two(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
+				   score += CannonPin;
+			}
+
+			Bitboard pin = cannon_supper_pin_bb(s, pos.occupied, pos.occupied_rl90);
+			//炮牵制车
+			if (pin & pos.pieces(Them, ROOK))
+			{
+				score += CannonPinRook;
+			}
+
+			//炮牵制马
+			if (pin & pos.pieces(Them, KNIGHT))
+			{
+				score += CannonPinKnight;
+			}
+            //炮牵制相
+			if (pin & pos.pieces(Them, BISHOP))
+			{
+				score += CannonPinBishop;
+			}
+
 		}
 		else if (Piece == KNIGHT)
 		{
 			//不被对方pawn威胁
 			//knight outposts squares			
-			if(  !(pos.pieces(Them, PAWN)&(s + pawn_push(Us) )) )
-				
+			if(  !(pos.pieces(Them, PAWN)&(s + pawn_push(Us) )) )				
 			{
 				score += evaluate_outposts<Piece, Us>(pos, ei, s);
 			}
@@ -600,33 +685,13 @@ Value do_evaluate(const Position& pos, Value& margin) {
 			// Bishop or knight behind a pawn
 			if (    relative_rank(Us, s) < RANK_5
 				&& (pos.pieces(PAWN) & (s + pawn_push(Us))))
-				
-				score -= MinorBehindPawn;//我方兵把马腿憋住了，所以要减去
+			{	
+				score -= KnightLegPawn;//我方兵把马腿憋住了，所以要减去
+			}
 
 			//Traped
-
-
 		}
 
-        if (  (Piece == ROOK )
-            && relative_rank(Us, s) >= RANK_5)
-        {
-            // Major piece attacking enemy pawns on the same rank/file
-            Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
-            if (pawns)
-                score += popcount<CNT_90>(pawns) * (RookOnPawn);
-        }
-
-        // Special extra evaluation for rooks
-        if (Piece == ROOK)
-        {
-            // Give a bonus for a rook on a open or semi-open file
-            if (popcount<CNT_90>(FileBB[file_of(s)] & b) > 4)
-            {
-				score += RookOpenFile;
-            }
-            
-        }
     }
 
     if (Trace)
@@ -1060,22 +1125,6 @@ Value do_evaluate(const Position& pos, Value& margin) {
     // Add the scores to the middle game and endgame eval
     return apply_weight(score, Weights[PassedPawns]);
   }
-
-
-  // evaluate_unstoppable_pawns() scores the most advanced among the passed and
-  // candidate pawns. In case opponent has no pieces but pawns, this is somewhat
-  // related to the possibility pawns are unstoppable.
-
-  Score evaluate_unstoppable_pawns(const Position& pos, Color us, const EvalInfo& ei) {
-
-    Bitboard b = ei.pi->passed_pawns(us);
-
-    if (!b || pos.non_pawn_material(~us))
-        return SCORE_ZERO;
-
-    return Unstoppable * int(relative_rank(us, frontmost_sq(us, b)));
-  }
-
 
   // evaluate_space() computes the space evaluation for a given side. The
   // space evaluation is a simple bonus based on the number of safe squares

@@ -256,8 +256,6 @@ Value Endgame<KPK>::operator()(const Position& pos) const {
       psq  = mirror(psq);
   }
 
-  if (!Bitbases::probe_kpk(wksq, psq, bksq, us))
-      return VALUE_DRAW;
 
   Value result = VALUE_KNOWN_WIN + PawnValueEg + Value(rank_of(psq));
 
@@ -968,7 +966,7 @@ ScaleFactor Endgame<KPKP>::operator()(const Position& pos) const {
 
   // Probe the KPK bitbase with the weakest side's pawn removed. If it's a draw,
   // it's probably at least a draw even with the pawn.
-  return Bitbases::probe_kpk(wksq, psq, bksq, us) ? SCALE_FACTOR_NONE : SCALE_FACTOR_DRAW;
+  return  SCALE_FACTOR_NONE;
 }
 
 ////----------------------------------------------------------------------

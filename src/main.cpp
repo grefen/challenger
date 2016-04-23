@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
   UCI::init(Options);
   Bitboards::init();
   Position::init();
-  Bitbases::init_kpk();
+  
   Search::init();
   Eval::init();
   Threads.init();

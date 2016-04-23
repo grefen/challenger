@@ -44,6 +44,7 @@ void on_clear_hash(const Option&) { TT.clear(); }
 
 void on_material(const Option&) { Material::init(); }
 void on_pst_value(const Option&) { Postion::init_psq_value();}
+void on_eval_variables(const Option&) { Eval::init_variables(); }
 
 
 /// Our case insensitive less() function as required by UCI protocol
@@ -92,6 +93,123 @@ void init(OptionsMap& o) {
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
   o["Piece Structure"]             = Option(100, 0, 200, on_eval);
 
+  typedef Value V;
+#define S(mg, eg) make_score(mg, eg)
+
+  //用于产生tuner文件
+  //Log log;
+
+  //log<<"name,   init,  max,  min,  c_end,  r_end,  elod"<<std::endl;
+
+  //PAWN, BISHOP, ADVISOR, KNIGHT, CANNON, ROOK, KING
+  const Score MobilityBonus[][32] = {
+	  {}, {},//Pawn
+	  { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Bishops
+	  { S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Advisor
+	  { S(-35,-30), S(-20,-20), S(-20,-20), S( 0,  0), S(0, 0), S(15, 10),S( 15, 10), S( 25, 12), S(25, 12) },//knight
+	  { S( -10, -10), S( 2,  4), S( 4,  4), S(6, 6), S(8, 8),S(10, 10),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12)},// Cannon
+	  { S(-20,-20), S(-18,-18), S(-16,-16), S( -10,-10), S( -8,-8), S(-4,-4),S( 0, 0), S( 4, 2), S(8, 4), S(12,6), S(16,8), S(20,10),S( 24,12), S( 24,12), S(24,12), S(24,12), S(24,12), S(24,12)}, // Rooks 
+  };
+  for (int pt1 = KNIGHT; pt1 <= ROOK; ++pt1)
+  {
+	  for (int c = 0; c <= 17; ++c)
+	  {
+
+		  int min = -40;
+		  int max = 40;
+
+		  if (pt1 == KNIGHT)
+		  {
+              min = -50;
+			  max = 50;
+		  }
+		  if (pt1 == CANNON)
+		  {
+			  min = 0;
+			  max = 20;
+		  }
+		  if (pt1 == ROOK)
+		  {
+			  min = -30;
+			  max = 30;
+		  }
+
+		  int m = (int)mg_value(MobilityBonus[pt1][c]);
+		  int e = (int)eg_value(MobilityBonus[pt1][c]);
+
+
+		  char buf[256] = {0};
+		  char text[1024]={0};
+
+		  sprintf(buf, "MobilityBonusM[%d][%d]",pt1,c);
+		  o[buf] = Option(m, min, max, on_eval_variables);
+
+		  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",buf, m, max,min,8, 1, 0);
+		  //log<<text<<std::endl;
+
+		  //------
+
+		  sprintf(buf, "MobilityBonusE[%d][%d]",pt1,c);
+		  o[buf] = Option(e, min, max, on_eval_variables);		  
+
+		  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",buf, e, max,min,8, 1, 0);
+		  //log<<text<<std::endl;
+
+	  }
+  }
+
+
+
+  const Score RookPin          = make_score(26, 31);
+  const Score CannonPin        = make_score(16, 11);
+
+  const Score RookOnPawn       = make_score(10, 28);
+  const Score RookOpenFile     = make_score(53, 21);
+
+  const Score RookPinRook      = make_score(20, 20);
+
+  const Score CannonPinRook    = make_score(10, 10);
+  const Score CannonPinKnight  = make_score(10, 10);
+  const Score CannonPinBishop  = make_score(5, 3);
+
+  const Score KnightLegPawn    = make_score(16,  0);
+
+  {
+	  char buf[256] = {0};
+	  char text[1024]={0};
+
+	  int min = -50;
+	  int max = 50;
+
+	  int m = 0;
+	  int e = 0;
+
+#define GEN_CODE(namem,namee, v, minv, maxv) {\
+	  m = (int)mg_value((v));\
+	  e = (int)eg_value((v));\
+      min = minv;\
+      max = maxv;\
+	  o[namem]= Option(m, min, max, on_eval_variables);\
+	  o[namee]= Option(e, min, max, on_eval_variables);\
+	  }
+	  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",(namem), m, max,min,8, 1, 0);\
+	  //log<<text<<std::endl;\
+	  //sprintf(text, "%s,%d,%d,%d,%d,%d,%d",(namee), e, max,min,8, 1, 0);\
+	  //log<<text<<std::endl;\
+	  }
+
+	  GEN_CODE("RookPinM","RookPinE", RookPin, 0, 50);
+	  GEN_CODE("CannonPinM","CannonPinE", CannonPin, 0, 50);
+	  GEN_CODE("RookOnPawnM","RookOnPawnE", RookOnPawn, 0, 50);
+	  GEN_CODE("RookOpenFileM","RookOpenFileE", RookOpenFile, 0, 50);
+	  GEN_CODE("RookPinRookM","RookPinRookE", RookPinRook, 0, 50);
+	  GEN_CODE("CannonPinRookM","CannonPinRookE", CannonPinRook, 0, 50);
+	  GEN_CODE("CannonPinKnightM","CannonPinKnightE", CannonPinKnight, 0, 50);
+	  GEN_CODE("CannonPinBishopM","CannonPinBishopE", CannonPinBishop, 0, 50);
+	  GEN_CODE("KnightLegPawnM","KnightLegPawnE", KnightLegPawn, 0, 50);
+
+
+  }
 
   //o["PawnValueMg"] = Option(198, 50, 500, on_pst_value);
   //o["PawnValueEg"] = Option(258, 50, 500, on_pst_value);
@@ -105,10 +223,6 @@ void init(OptionsMap& o) {
   //o["CannonValueEg"] = Option(857, 500, 1500, on_pst_value);
   //o["RookValueMg"] = Option(2021, 1000, 2800, on_pst_value);
   //o["RookValueEg"] = Option(2058, 1000, 2800, on_pst_value);
-
-  //Log log;
-
-  //log<<"name,   init,  max,  min,  c_end,  r_end,  elod"<<std::endl;
 
   //const int LinearCoefficients[7] = { 0,   -162, -190,   -190,   -1000,   105,   26 };
   //for (int pt1 = PAWN; pt1 <= ROOK; ++pt1)
