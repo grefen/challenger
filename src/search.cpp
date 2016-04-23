@@ -843,7 +843,7 @@ moves_loop: // When in check and at SpNode search starts from here
       givesCheck = move_is_check(pos,move);//pos.move_gives_check(move, ci);
       dangerous =   givesCheck
                  || pos.is_passed_pawn_push(move);
-                 /*|| type_of(move) == CASTLE;*/
+                 
 
       // Step 12. Extend checks and, in PV nodes, also dangerous moves
       if (PvNode && dangerous)
@@ -1490,8 +1490,6 @@ moves_loop: // When in check and at SpNode search starts from here
             return true;
 
         // Scan for possible X-ray attackers behind the moved piece
-        //Bitboard xray =  (attacks_bb<  ROOK>(m2to, occ) & pos.pieces(color_of(pc), QUEEN, ROOK))
-        //               | (attacks_bb<BISHOP>(m2to, occ) & pos.pieces(color_of(pc), QUEEN, BISHOP));
 		Bitboard xray =  (rook_attacks_bb(m2to, occ, occl90) & pos.pieces(color_of(pc), ROOK))
 			| (cannon_control_bb(m2to, occ, occl90) & pos.pieces(color_of(pc), CANNON));
 
