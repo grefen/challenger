@@ -172,13 +172,13 @@ namespace {
   Score CannonPin        = make_score(16, 11);
 
   Score RookOnPawn       = make_score(10, 28);
-  Score RookOpenFile     = make_score(53, 21);
+  Score RookOpenFile     = make_score(53, 0);
 
-  Score RookPinRook      = make_score(20, 20);
+  Score RookPinRook      = make_score(30, 30);
 
-  Score CannonPinRook    = make_score(10, 10);
+  Score CannonPinRook    = make_score(10, 5);
   Score CannonPinKnight  = make_score(10, 10);
-  Score CannonPinBishop  = make_score(5, 3);
+  Score CannonPinBishop  = make_score(2, 0);
 
   Score KnightLegPawn    = make_score(16,  0);
 
@@ -220,11 +220,11 @@ namespace {
   const int KingAttackWeights[] = { 0, 3, 0, 0, 3, 3, 5 };
 
   // Bonuses for enemy's safe checks
-  const int RookContactCheck  = 4;
-  const int RookCheck         = 2;
-  const int KnightCheck       = 1;
-  const int CannonCheck       = 1;
-  const int PawnCheck         = 1;
+  const int RookContactCheck  = 16;
+  const int RookCheck         = 12;
+  const int KnightCheck       = 6;
+  const int CannonCheck       = 6;
+  const int PawnCheck         = 8;
 
   // KingExposed[Square] contains penalties based on the position of the
   // defending king, indexed by king's square (from white's point of view).
@@ -236,9 +236,9 @@ namespace {
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	  0,  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,  0,
-	  0,  0,  0,  8,  8,  8,  0,  0,  0,
-	  0,  0,  0, 15, 15, 15,  0,  0,  0
+	  0,  0,  0,  4,  4,  4,  0,  0,  0,
+	  0,  0,  0,  2,  2,  2,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0
   };
 
   // KingDanger[Color][attackUnits] contains the actual king danger weighted
@@ -311,7 +311,7 @@ namespace Eval {
 
     for (int t = 0, i = 1; i < 100; ++i)
     {
-        t = std::min(Peak, std::min(int(0.4 * i * i), t + MaxSlope));
+        t = std::min(Peak, std::min(int(0.4 * i * i), t + MaxSlope));		
 
         KingDanger[1][i] = apply_weight(make_score(t, 0), Weights[KingDangerUs]);
         KingDanger[0][i] = apply_weight(make_score(t, 0), Weights[KingDangerThem]);
@@ -411,13 +411,13 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   score += apply_weight(mobilityWhite - mobilityBlack, Weights[Mobility]);
 
-#if 0
+
   // Evaluate kings after all other pieces because we need complete attack
   // information when computing the king safety evaluation.
-  //score +=  evaluate_king<WHITE, Trace>(pos, ei, margins)
-	  //- evaluate_king<BLACK, Trace>(pos, ei, margins);
+  score +=  evaluate_king<WHITE, Trace>(pos, ei, margins)
+	  - evaluate_king<BLACK, Trace>(pos, ei, margins);
 
-
+#if 0
   // Evaluate tactical threats, we need full attack information including king
   score +=  evaluate_threats<WHITE, Trace>(pos, ei)
 	  - evaluate_threats<BLACK, Trace>(pos, ei);
@@ -481,15 +481,16 @@ Value do_evaluate(const Position& pos, Value& margin) {
 	const Square Right = (Us == WHITE ? DELTA_E : DELTA_W);
 	const Square Left  = (Us == WHITE ? DELTA_W : DELTA_E);
 
-	Bitboard ourPawns = pos.pieces(Us, PAWN);
+	
+	Square ksq = pos.king_square(Them);
 
 	ei.pinnedPieces[Us] = pos.pinned_pieces();
 
-    ei.attackedBy[Them][KING] = pos.attacks_from<KING>(pos.king_square(Them),Them);
+    ei.attackedBy[Them][KING] = pos.attacks_from<KING>(ksq,Them);
 	ei.attackedBy[Us][ALL_PIECES] = ei.attackedBy[Us][PAWN] = ei.pi->pawn_attacks(Us);
 
 	//attacks_from<KING> can only calc sq in city
-	Bitboard b = (shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns)|shift_bb<Up>(ourPawns)|shift_bb<Down>(ourPawns));
+	Bitboard b = (shift_bb<Right>(SquareBB[ksq]) | shift_bb<Left>(SquareBB[ksq])|shift_bb<Up>(SquareBB[ksq])|shift_bb<Down>(SquareBB[ksq]));
 
 	// Init king safety tables only if we are going to use them
 	ei.kingRing[Them] = b | shift_bb<Down>(b);
@@ -588,6 +589,20 @@ Value do_evaluate(const Position& pos, Value& margin) {
 			b = pos.attacks_from<KING>(s, Us);
 		else if(Piece == PAWN)
             b = pos.attacks_from<PAWN>(s, Us);
+
+		if (ei.pinnedPieces[Us] & s)
+		{
+			 if(file_of(s) == file_of(pos.king_square(Us)))
+			 {
+                 b &= FileBB[file_of(s)];
+			 }
+
+			 if (rank_of(s) == rank_of(pos.king_square(Us)))
+			 {
+                 b &= RankBB[rank_of(s)];
+			 }
+
+		}
  
         ei.attackedBy[Us][Piece] |= b;
 
@@ -805,7 +820,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // number and types of the enemy's attacking pieces, the number of
         // attacked and undefended squares around our king, the square of the
         // king, and the quality of the pawn shelter.
-        attackUnits =  std::min(25, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
+        attackUnits =  std::min(10, (ei.kingAttackersCount[Them] * ei.kingAttackersWeight[Them]) / 2)
                      + 3 * (ei.kingAdjacentZoneAttacksCount[Them] + popcount<CNT_90>(undefended))
                      + KingExposed[relative_square(Us, ksq)]
                      - mg_value(score) / 32;
