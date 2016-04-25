@@ -1,7 +1,7 @@
 /*
-  Challenger, a UCI chess playing engine derived from Stockfish
-  
-  
+  Challenger, a UCI chess playing engine derived from Stockfish 
+
+  Copyright (C) 2013-2017 grefen
 
   Challenger is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

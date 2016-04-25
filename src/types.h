@@ -1,7 +1,7 @@
 /*
   Challenger, a UCI chinese chess playing engine based on Stockfish
   
-  Copyright (C) 2013-2014 grefen
+ Copyright (C) 2013-2017 grefen
 
   Challenger is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -145,26 +145,12 @@ enum Value {
   VALUE_ENSURE_INTEGER_SIZE_P = INT_MAX,
   VALUE_ENSURE_INTEGER_SIZE_N = INT_MIN,
 
-  //PawnValueMg   = 198,   PawnValueEg   = 258,
-  //BishopValueMg = 460,   BishopValueEg = 472,
-  //AdvisorValueMg= 454,   AdvisorValueEg= 477,
-  //KnightValueMg = 993,   KnightValueEg = 1024,
-  //CannonValueMg = 1000,   CannonValueEg = 1016,
-  //RookValueMg   = 2021,  RookValueEg   = 2058,
-
-  //PawnValueMg   = 90,   PawnValueEg   = 344,
-  //BishopValueMg = 200,   BishopValueEg = 374,
-  //AdvisorValueMg= 495,   AdvisorValueEg= 772,
-  //KnightValueMg = 820,   KnightValueEg = 853,
-  //CannonValueMg = 958,   CannonValueEg = 827,
-  //RookValueMg   = 1823,  RookValueEg   = 2060,
-
 
   PawnValueMg   = 89,   PawnValueEg   = 305,
-  BishopValueMg = 244,   BishopValueEg = 289,//244 289
+  BishopValueMg = 244,   BishopValueEg = 289,
   AdvisorValueMg= 535,   AdvisorValueEg= 435,
-  KnightValueMg = 802,   KnightValueEg = 865,//840
-  CannonValueMg = 865,   CannonValueEg = 842,//1281
+  KnightValueMg = 802,   KnightValueEg = 865,
+  CannonValueMg = 865,   CannonValueEg = 842,
   RookValueMg   = 1891,  RookValueEg   = 2020,
 };
 
