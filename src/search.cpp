@@ -554,6 +554,11 @@ namespace {
 
     if (!RootNode)
     {
+		//check repeat check
+		int rep = pos.is_repeat();
+		if (rep != REPEATE_NONE) {
+			return repeat_value(ss->ply, rep);
+		}
 		
 		// Step 2. Check for aborted search and immediate draw
         if (Signals.stop || pos.is_draw() || ss->ply > MAX_PLY)
@@ -1214,6 +1219,11 @@ moves_loop: // When in check and at SpNode search starts from here
     ss->currentMove = bestMove = MOVE_NONE;
     ss->ply = (ss-1)->ply + 1;
 
+	//check repeat check
+	int rep = pos.is_repeat();
+	if (rep != REPEATE_NONE) {
+		return repeat_value(ss->ply, rep);
+	}
 
     // Check for an instant draw or maximum ply reached
     if (pos.is_draw() || ss->ply > MAX_PLY)

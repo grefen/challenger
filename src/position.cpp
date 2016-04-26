@@ -769,6 +769,36 @@ bool  Position::is_in_check()const{
 	return false;
 }
 
+int  Position::is_repeat()const
+{	
+	bool oppcheck = true;
+	bool mecheck = true;
+	int  checktime = 0;
+
+	StateInfo* stp = st;
+	for (int i = 2, e = std::min(st->rule50, st->pliesFromNull); i <= e; i += 2)
+	{
+		StateInfo* stopp = stp->previous;
+		StateInfo* stme = stp;
+
+		stp = stp->previous->previous;
+
+		if (oppcheck && !stme->checkersBB) oppcheck = false;
+		if (mecheck && !stopp->checkersBB)  mecheck = false;
+
+		if (stp->key == st->key)  //repetition
+		{
+			checktime++;
+
+			if (checktime >= 1)
+			{
+				return REPEATE_TRUE + (mecheck ? REPEATE_ME_CHECK : REPEATE_NONE) + (oppcheck ? REPEATE_OPP_CHECK : REPEATE_NONE);
+			}
+		}
+	}
+
+	return REPEATE_NONE;
+}
 
 /// Position::do_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be legal. Pseudo-legal

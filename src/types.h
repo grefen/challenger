@@ -135,6 +135,7 @@ enum Value {
   VALUE_ZERO      = 0,
   VALUE_DRAW      = 0,
   VALUE_KNOWN_WIN = 15000,
+  VALUE_REPEAT    = 25000,
   VALUE_MATE      = 30000,
   VALUE_INFINITE  = 30001,
   VALUE_NONE      = 30002,
@@ -152,6 +153,13 @@ enum Value {
   KnightValueMg = 802,   KnightValueEg = 865,
   CannonValueMg = 865,   CannonValueEg = 842,
   RookValueMg   = 1891,  RookValueEg   = 2020,
+};
+
+enum RepeatType {
+	REPEATE_NONE = 0,
+	REPEATE_TRUE = 1,
+	REPEATE_ME_CHECK = 2,
+	REPEATE_OPP_CHECK= 4
 };
 
 enum PieceType {
@@ -400,6 +408,12 @@ inline Value mate_in(int ply) {
 
 inline Value mated_in(int ply) {
   return -VALUE_MATE + ply;
+}
+
+inline Value repeat_value(int ply, int reptype) {
+	int v;
+	v = (reptype & REPEATE_ME_CHECK) ? (-VALUE_REPEAT + ply) : 0 + (reptype & REPEATE_OPP_CHECK) ? (VALUE_REPEAT - ply) : 0;
+	return Value(v == 0 ? VALUE_DRAW : v);
 }
 
 inline Piece make_piece(Color c, PieceType pt) {

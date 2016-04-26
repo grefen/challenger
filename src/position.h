@@ -155,6 +155,7 @@ public:
   Piece piece_moved(Move m) const;
   PieceType captured_piece_type() const;
   bool is_in_check()const;
+  int  is_repeat()const;
 
   // Piece specific
   bool pawn_is_passed(Color c, Square s) const;

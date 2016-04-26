@@ -114,7 +114,7 @@ namespace {
 		{}, {},//Pawn
 		{ S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Bishops
 		{ S( 0, 0), S( 0,  0 ), S( 0,  0), S(0, 0),   S(0, 0)},// Advisor
-		{ S(-35,-30), S(-20,-20), S(-20,-20), S( 0,  0), S(0, 0), S(15, 10),S( 15, 10), S( 25, 12), S(25, 12) },//knight
+		{ S(-35,-30), S(-30,-25), S(-20,-20), S( 0,  0), S(10, 10), S(15, 15),S( 20, 20), S( 25, 25), S(25, 25) },//knight
 		{ S( -10, -10), S( 2,  4), S( 4,  4), S(6, 6), S(8, 8),S(10, 10),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12),S(12, 12)},// Cannon
 		{ S(-20,-20), S(-18,-18), S(-16,-16), S( -10,-10), S( -8,-8), S(-4,-4),S( 0, 0), S( 4, 2), S(8, 4), S(12,6), S(16,8), S(20,10),S( 24,12), S( 24,12), S(24,12), S(24,12), S(24,12), S(24,12)}, // Rooks 
 	};
@@ -126,12 +126,12 @@ namespace {
 			//  A     B     C     D     E     F     G     H    I
 			V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0), // Knights
 				V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
-				V(0), V(0), V(10),V(0), V(0), V(0), V(10),V(0),  V(0),
-				V(0), V(10),V(10),V(12),V(8), V(12),V(10),V(10), V(0),
-				V(0), V(8), V(8), V(10),V(10),V(10),V(8), V(8),  V(0),
+				V(0), V(0), V(13),V(0), V(0), V(0), V(13),V(0),  V(0),
+				V(0), V(15),V(15),V(15),V(15), V(15),V(15),V(15), V(0),
+				V(0), V(15), V(8), V(15),V(15),V(15),V(8), V(15),  V(0),
 
-				V(0),V(10), V(10),V(15),V(10),V(15), V(10),V(10), V(0),
-				V(0), V(0), V(0), V(0), V(10),V(0),  V(0), V(0), V(0),
+				V(0),V(15), V(15),V(15),V(15),V(15), V(15),V(15), V(0),
+				V(0), V(0), V(0), V(0), V(15),V(0),  V(0), V(0), V(0),
 				V(0), V(0), V(15),V(0), V(0), V(0),  V(15), V(0),  V(0),
 				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
 				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
@@ -144,7 +144,7 @@ namespace {
 	const Score Threat[][PIECE_TYPE_NB] = {
 		//NONE     PAWN        BISHOP    ADVISOR    KNIGHT     CANNON     ROOK
 		{ S(0, 0), S( 7, 7), S(24, 49), S(24, 49), S(41,100), S(41,100), S(41,100)}, // Minor
-		{ S(0, 0), S( 0, 15), S(15, 15), S(15, 15), S(15, 35), S(15, 35), S(24, 49)}  // Major
+		{ S(0, 0), S( 7, 15), S(15, 15), S(15, 15), S(15, 35), S(15, 35), S(24, 49)}  // Major
 	};
 
 	// Hanging[side to move] contains a bonus for each enemy hanging piece
@@ -154,7 +154,7 @@ namespace {
 	// type is attacked by an enemy pawn.
 	const Score ThreatenedByPawn[] = {
 		//NONE   //PAWN     //BISHOP   //ADVISOR  //KNIGHT   //CANNON   //ROOK
-		S(0, 0), S(0, 0), S(10, 10), S(15, 15),   S(16, 19), S(6, 9), S(0, 0)
+		S(0, 0), S(0, 0), S(10, 10), S(15, 15),   S(26, 29), S(6, 9), S(0, 0)
 	};
 
 	//空头炮
@@ -214,7 +214,7 @@ namespace {
 	//
 	// KingAttackWeights[PieceType] contains king attack weights by piece type
 	//NONE   //PAWN     //BISHOP   //ADVISOR  //KNIGHT   //CANNON   //ROOK
-	const int KingAttackWeights[] = { 0, 3, 0, 0, 3, 3, 5 };
+	const int KingAttackWeights[] = { 0, 6, 0, 0, 6, 3, 6 };
 
 	// Bonuses for enemy's safe checks
 	const int RookContactCheck  = 8;
@@ -301,7 +301,7 @@ namespace Eval {
 		Weights[Space]          = weight_option("Space", "Space", WeightsInternal[Space]);
 		Weights[KingDangerUs]   = weight_option("Cowardice", "Cowardice", WeightsInternal[KingDangerUs]);
 		Weights[KingDangerThem] = weight_option("Aggressiveness", "Aggressiveness", WeightsInternal[KingDangerThem]);
-		Weights[PieceStructure] = weight_option("Aggressiveness", "Aggressiveness", WeightsInternal[PieceStructure]);
+		Weights[PieceStructure] = weight_option("Piece Structure", "Piece Structure", WeightsInternal[PieceStructure]);
 
 		const int MaxSlope = 30;
 		const int Peak = 1280;
@@ -490,7 +490,7 @@ namespace {
 		Bitboard b = (shift_bb<Right>(SquareBB[ksq]) | shift_bb<Left>(SquareBB[ksq])|shift_bb<Up>(SquareBB[ksq])|shift_bb<Down>(SquareBB[ksq]));
 
 		// Init king safety tables only if we are going to use them
-		ei.kingRing[Them] = b | shift_bb<Down>(b);
+		ei.kingRing[Them] = b | shift_bb<Down>(b)|shift_bb<Right>(b)|shift_bb<Left>(b)|shift_bb<Up>(b);
 		b &= ei.attackedBy[Us][PAWN];
 		ei.kingAttackersCount[Us] = b ? popcount<CNT_90>(b): 0;
 		ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
@@ -911,151 +911,155 @@ namespace {
 
 		while ((s = *pl++) != SQ_NONE)
 		{
-			if( Piece == ROOK )
-			{            
-				//ROOK			 
-				{				 
-					Bitboard rcb = cannon_control_bb(s, pos.occupied, pos.occupied_rl90);
-					if(rcb & pos.pieces(Them,ROOK))
-				 {
-					 Square rSq = pos.list<ROOK>(Them)[0];
-					 if(rcb&rSq)
-					 {
-						 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
-						 {
-							 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
-							 {
-								 score += RookPinRook;
-							 }
-						 }
-					 }
-					 else
-					 {
-						 rSq = pos.list<ROOK>(Them)[1];
-						 if(rcb&rSq)
-						 {
-							 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
-							 {
-								 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
-								 {
-									 score += RookPinRook;
-								 }
-							 }
-						 }
-					 }
-				 }
-			 }
-
-
-				//铁门栓
-				if(file_of(s) == file_of(pos.king_square(Us)))
-			 {
-				 score +=  RookBehindKing;
-
-				 if( (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
-				 {
-					 score +=  RookBehindKing;
-				 }
-			 }
-
-				//霸王车
-				if(ei.attackedBy[Us][ROOK] & pos.pieces(Us,ROOK))
-			 {
-				 score +=  RookDubRook;
-
-				 if((file_of(s) == FILE_D || file_of(s) == FILE_G) && (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
-				 {
-					 score +=  RookDubRook;
-				 }
-			 }
-				//车马
-				if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][KNIGHT]))
-			 {
-				 score +=  RookKnight;
-			 }
-
-				//车炮
-				if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][CANNON]))
-			 {
-				 score +=  RookCannon;
-			 }
-
-
-			}
-			else if(Piece == CANNON)
+			if (Piece == ROOK)
 			{
-				//king
-				if(equal_to_two(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
-				{
-					if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,ROOK))
-					{
-						score +=  CannonKingRook;
-						if(ei.attackedBy[Us][ALL_PIECES] & s)
-							score +=  CannonKingRook;
-					}
-
-					if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,KNIGHT))
-					{
-						score +=  CannonKingKnight;
-					}
-				}
-
-				if(PseudoAttacks[Piece][pos.king_square(Them)] & s)
-				{
-					if( !(BetweenBB[s][pos.king_square(Them)] & pos.pieces()) )
-					{
-						//if(in_front_bb(Us,rank_of(s)) & pos.count<ROOK>(Us))
-
-						if(pos.count<ROOK>(Us) + pos.count<CANNON>(Us) + pos.count<KNIGHT>(Us) > 0)
-						{
-							score += ShortGunDistance[ std::max( file_distance(s,pos.king_square(Them)), rank_distance(s,pos.king_square(Them))) ];
-
-							int bonus = ShortGunPieceCount[ROOK]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us);					
-							score += make_score(bonus,bonus);
-						}
-
-					}				
-				}
-				//对车的牵制
-				if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,ROOK)))
-				{
-					score += CannonPinRook;
-				}
-
-				if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
-				{
-					score += CannonPinKnight;
-				}
-
-				if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,BISHOP)))
-				{
-					score += CannonPinBishop;
-				}
-
-				if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
-				{
-					score += CannonPinRook;
-				}
-			}
-			else if(Piece == KNIGHT)
-			{
-				if( (file_of(s) == FILE_A && file_bb(FILE_B)&pos.pieces(Them,ROOK)) ||
-					(file_of(s) == FILE_I && file_bb(FILE_H)&pos.pieces(Them,ROOK)))
-				{
-					score -= KnightEdgeRook;
-				}
-
 
 			}
-			else if(Piece == PAWN)
-			{
-			}
-			else if(Piece == BISHOP)
-			{
-			}
-			else if(Piece == ADVISOR)
-			{
-			}
+			//if( Piece == ROOK )
+			//{            
+			//	//ROOK			 
+			//	{				 
+			//		Bitboard rcb = cannon_control_bb(s, pos.occupied, pos.occupied_rl90);
+			//		if(rcb & pos.pieces(Them,ROOK))
+			//	 {
+			//		 Square rSq = pos.list<ROOK>(Them)[0];
+			//		 if(rcb&rSq)
+			//		 {
+			//			 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
+			//			 {
+			//				 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
+			//				 {
+			//					 score += RookPinRook;
+			//				 }
+			//			 }
+			//		 }
+			//		 else
+			//		 {
+			//			 rSq = pos.list<ROOK>(Them)[1];
+			//			 if(rcb&rSq)
+			//			 {
+			//				 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
+			//				 {
+			//					 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
+			//					 {
+			//						 score += RookPinRook;
+			//					 }
+			//				 }
+			//			 }
+			//		 }
+			//	 }
+			// }
+
+
+			//	//铁门栓
+			//	if(file_of(s) == file_of(pos.king_square(Us)))
+			// {
+			//	 score +=  RookBehindKing;
+
+			//	 if( (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
+			//	 {
+			//		 score +=  RookBehindKing;
+			//	 }
+			// }
+
+			//	//霸王车
+			//	if(ei.attackedBy[Us][ROOK] & pos.pieces(Us,ROOK))
+			// {
+			//	 score +=  RookDubRook;
+
+			//	 if((file_of(s) == FILE_D || file_of(s) == FILE_G) && (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
+			//	 {
+			//		 score +=  RookDubRook;
+			//	 }
+			// }
+			//	//车马
+			//	if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][KNIGHT]))
+			// {
+			//	 score +=  RookKnight;
+			// }
+
+			//	//车炮
+			//	if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][CANNON]))
+			// {
+			//	 score +=  RookCannon;
+			// }
+
+
+			//}
+			//else if(Piece == CANNON)
+			//{
+			//	//king
+			//	if(equal_to_two(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
+			//	{
+			//		if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,ROOK))
+			//		{
+			//			score +=  CannonKingRook;
+			//			if(ei.attackedBy[Us][ALL_PIECES] & s)
+			//				score +=  CannonKingRook;
+			//		}
+
+			//		if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,KNIGHT))
+			//		{
+			//			score +=  CannonKingKnight;
+			//		}
+			//	}
+
+			//	if(PseudoAttacks[Piece][pos.king_square(Them)] & s)
+			//	{
+			//		if( !(BetweenBB[s][pos.king_square(Them)] & pos.pieces()) )
+			//		{
+			//			//if(in_front_bb(Us,rank_of(s)) & pos.count<ROOK>(Us))
+
+			//			if(pos.count<ROOK>(Us) + pos.count<CANNON>(Us) + pos.count<KNIGHT>(Us) > 0)
+			//			{
+			//				score += ShortGunDistance[ std::max( file_distance(s,pos.king_square(Them)), rank_distance(s,pos.king_square(Them))) ];
+
+			//				int bonus = ShortGunPieceCount[ROOK]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us);					
+			//				score += make_score(bonus,bonus);
+			//			}
+
+			//		}				
+			//	}
+			//	//对车的牵制
+			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,ROOK)))
+			//	{
+			//		score += CannonPinRook;
+			//	}
+
+			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
+			//	{
+			//		score += CannonPinKnight;
+			//	}
+
+			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,BISHOP)))
+			//	{
+			//		score += CannonPinBishop;
+			//	}
+
+			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
+			//	{
+			//		score += CannonPinRook;
+			//	}
+			//}
+			//else if(Piece == KNIGHT)
+			//{
+			//	if( (file_of(s) == FILE_A && file_bb(FILE_B)&pos.pieces(Them,ROOK)) ||
+			//		(file_of(s) == FILE_I && file_bb(FILE_H)&pos.pieces(Them,ROOK)))
+			//	{
+			//		score -= KnightEdgeRook;
+			//	}
+
+
+			//}
+			//else if(Piece == PAWN)
+			//{
+			//}
+			//else if(Piece == BISHOP)
+			//{
+			//}
+			//else if(Piece == ADVISOR)
+			//{
+			//}
 
 		}
 
