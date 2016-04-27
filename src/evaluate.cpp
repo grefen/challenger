@@ -144,11 +144,11 @@ namespace {
 	const Score Threat[][PIECE_TYPE_NB] = {
 		//NONE     PAWN        BISHOP    ADVISOR    KNIGHT     CANNON     ROOK
 		{ S(0, 0), S( 7, 7), S(24, 49), S(24, 49), S(41,100), S(41,100), S(41,100)}, // Minor
-		{ S(0, 0), S( 7, 15), S(15, 15), S(15, 15), S(15, 35), S(15, 35), S(24, 49)}  // Major
+		{ S(0, 0), S( 7, 7), S(15, 15), S(15, 15), S(35, 35), S(15, 35), S(24, 49)}  // Major
 	};
 
 	// Hanging[side to move] contains a bonus for each enemy hanging piece
-	const Score Hanging[2] = { S(23, 20) , S(35, 45) };
+	const Score Hanging[2] = { S(10, 20) , S(15, 25) };
 
 	// ThreatenedByPawn[PieceType] contains a penalty according to which piece
 	// type is attacked by an enemy pawn.
@@ -168,7 +168,7 @@ namespace {
 	Score RookPin          = make_score(26, 31);
 	Score CannonPin        = make_score(16, 11);
 
-	Score RookOnPawn       = make_score(10, 28);
+	Score RookOnPawn       = make_score(10, 18);
 	Score RookOpenFile     = make_score(53, 0);
 
 	Score RookPinRook      = make_score(50, 50);
@@ -214,10 +214,10 @@ namespace {
 	//
 	// KingAttackWeights[PieceType] contains king attack weights by piece type
 	//NONE   //PAWN     //BISHOP   //ADVISOR  //KNIGHT   //CANNON   //ROOK
-	const int KingAttackWeights[] = { 0, 6, 0, 0, 6, 3, 6 };
+	const int KingAttackWeights[] = { 0, 2, 0, 0, 1, 1, 2 };
 
 	// Bonuses for enemy's safe checks
-	const int RookContactCheck  = 8;
+	const int RookContactCheck  = 6;
 	const int RookCheck         = 6;
 	const int KnightCheck       = 3;
 	const int CannonCheck       = 3;
@@ -490,7 +490,7 @@ namespace {
 		Bitboard b = (shift_bb<Right>(SquareBB[ksq]) | shift_bb<Left>(SquareBB[ksq])|shift_bb<Up>(SquareBB[ksq])|shift_bb<Down>(SquareBB[ksq]));
 
 		// Init king safety tables only if we are going to use them
-		ei.kingRing[Them] = b | shift_bb<Down>(b)|shift_bb<Right>(b)|shift_bb<Left>(b)|shift_bb<Up>(b);
+		ei.kingRing[Them] = b | shift_bb<Down>(b)/*|shift_bb<Right>(b)|shift_bb<Left>(b)|shift_bb<Up>(b)*/;
 		b &= ei.attackedBy[Us][PAWN];
 		ei.kingAttackersCount[Us] = b ? popcount<CNT_90>(b): 0;
 		ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
