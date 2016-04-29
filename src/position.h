@@ -58,6 +58,7 @@ struct CheckInfo {
 struct StateInfo {
   Key pawnKey, materialKey;
   Value npMaterial[COLOR_NB];
+  Value npAttackMaterial[COLOR_NB];
   int rule50, pliesFromNull;
   Score psq;
  
@@ -124,12 +125,6 @@ public:
   template<PieceType Pt> int count(Color c) const;
   template<PieceType Pt> const Square* list(Color c) const;
 
-  // Castling
-  //int can_castle(CastleRight f) const;
-  //int can_castle(Color c) const;
-  //bool castle_impeded(Color c, CastlingSide s) const;
-  //Square castle_rook_square(Color c, CastlingSide s) const;
-
   // Checking
   Bitboard checkers() const;
   Bitboard discovered_check_candidates() const;
@@ -183,6 +178,7 @@ public:
   // Incremental piece-square evaluation
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
+  Value attack_material(Color c)const;
 
   // Other properties of the position
   Color side_to_move() const;
@@ -217,6 +213,7 @@ private:
   // Computing incremental evaluation scores and material counts
   Score compute_psq_score() const;
   Value compute_non_pawn_material(Color c) const;
+  Value compute_attack_material(Color c) const;
 
   public:
 	  //后面添加的，为了处理rook和cannon的根据行或列一次构建招法位棋盘；
@@ -233,9 +230,6 @@ private:
 	  int index[SQUARE_NB];
 
 	  // Other info
-	  //int castleRightsMask[SQUARE_NB];
-	  //Square castleRookSquare[COLOR_NB][CASTLING_SIDE_NB];
-	  //Bitboard castlePath[COLOR_NB][CASTLING_SIDE_NB];
 	  StateInfo startState;
 	  int64_t nodes;
 	  int gamePly;
@@ -495,6 +489,10 @@ inline Score Position::psq_score() const {
 
 inline Value Position::non_pawn_material(Color c) const {
   return st->npMaterial[c];
+}
+
+inline Value Position::attack_material(Color c) const {
+	return st->npAttackMaterial[c];
 }
 
 inline bool Position::is_passed_pawn_push(Move m) const {

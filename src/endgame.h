@@ -27,59 +27,16 @@
 #include "types.h"
 
 
-/// EndgameType lists all supported endgames
-
+//在endgame时的evaluation或者Scaling function
 enum EndgameType {
-
-  // Evaluation functions
-  // flow return value
-  KNNK,  // KNN vs K
-  KXK,   // Generic "mate lone king" eval
-  KBNK,  // KBN vs K
-  KPK,   // KP vs K
-  KRKP,  // KR vs KP
-  KRKB,  // KR vs KB
-  KRKN,  // KR vs KN
-  KQKP,  // KQ vs KP
-  KQKR,  // KQ vs KR
-  KBBKN, // KBB vs KN
-  KmmKm, // K and two minors vs K and one or two minors
-
 
   KdKd,//没有attack的子
 
-
-  // Scaling functions
-  //flow return scale facter
   SCALE_FUNS,
-
-  KBPsK,   // KB+pawns vs K
-  KQKRPs,  // KQ vs KR+pawns
-  KRPKR,   // KRP vs KR
-  KRPPKRP, // KRPP vs KRP
-  KPsK,    // King and pawns vs king
-  KBPKB,   // KBP vs KB
-  KBPPKB,  // KBPP vs KB
-  KBPKN,   // KBP vs KN
-  KNPK,    // KNP vs K
-  KNPKB,   // KNP vs KB
-  KPKP,     // KP vs KP
-
-
-  //return value
-  //d:defend, a:attack
 
   KdaKd,
   KdaKda,
-  Kd2aKd,
-  Kd2aKda,
-  Kd2aKd2a,
-  Kd3aKd,
-  Kd3aKda,
-  Kd3aKd2a,
-  Kd3aKd3a,
 
-  KdasKdas,
 };
 
 

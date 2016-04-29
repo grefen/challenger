@@ -123,20 +123,37 @@ namespace {
 	// by piece type and square (from white's point of view).
 	const Value Outpost[][SQUARE_NB] = {
 		{
-			//  A     B     C     D     E     F     G     H    I
-			V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0), // Knights
-				V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
-				V(0), V(0), V(13),V(0), V(0), V(0), V(13),V(0),  V(0),
-				V(0), V(15),V(15),V(15),V(15), V(15),V(15),V(15), V(0),
-				V(0), V(15), V(8), V(15),V(15),V(15),V(8), V(15),  V(0),
-
-				V(0),V(15), V(15),V(15),V(15),V(15), V(15),V(15), V(0),
-				V(0), V(0), V(0), V(0), V(15),V(0),  V(0), V(0), V(0),
+			    //  A     B     C     D     E     F     G     H    I
+				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
+				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
 				V(0), V(0), V(15),V(0), V(0), V(0),  V(15), V(0),  V(0),
-				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
-				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
+				V(0), V(0), V(0), V(0), V(15),V(0),  V(0), V(0), V(0),
+				V(0),V(15), V(15),V(15),V(15),V(15), V(15),V(15), V(0),
+
+
+				V(0), V(15), V(8), V(15),V(15),V(15),V(8), V(15),  V(0),
+				V(0), V(15),V(15),V(15),V(15), V(15),V(15),V(15), V(0),
+				V(0), V(0), V(12),V(0), V(0), V(0), V(12),V(0),  V(0),
+				V(0), V(0), V(15), V(0), V(0), V(0), V(15), V(0),  V(0),
+				V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0), 
 		}
 	};
+
+	const Value AttackEnergy[]={
+		//  A     B     C     D     E     F     G     H    I
+		V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0), 
+		V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
+		V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
+		V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
+		V(0), V(0), V(0), V(0), V(0), V(0), V(0), V(0),  V(0),
+
+		V(0), V(1), V(1), V(1), V(2), V(1),  V(1), V(1),  V(0),
+		V(0), V(1), V(1), V(2), V(3), V(2),  V(1), V(1),  V(0),
+		V(0), V(1), V(2), V(3), V(4), V(3),  V(2), V(1),  V(0),
+		V(0), V(2), V(3), V(4), V(5), V(4),  V(3), V(2),  V(0),
+		V(1), V(2), V(4), V(5), V(6), V(5),  V(4), V(2),  V(1),
+	};
+	const int AttackEnergyWeight[]={ 0, 3, 0, 0, 2, 2, 1};
 
 
 	// Threat[attacking][attacked] contains bonuses according to which piece
@@ -166,7 +183,7 @@ namespace {
 	const Score Tempo            = make_score(24, 11);
 
 	Score RookPin          = make_score(26, 31);
-	Score CannonPin        = make_score(16, 11);
+	Score CannonPin        = make_score(26, 21);
 
 	Score RookOnPawn       = make_score(10, 18);
 	Score RookOpenFile     = make_score(53, 0);
@@ -180,23 +197,6 @@ namespace {
 	Score KnightLegPawn    = make_score(16,  0);
 
 	//////////////////////////////////////////////////////////////////////////
-
-	//const Score CannonKingKnight = make_score(10, 5);
-	//const Score CannonKingRook   = make_score(20, 15);
-
-	//const Score BishopPawns      = make_score( 8, 12);
-	//const Score MinorBehindPawn  = make_score(16,  0);
-	//const Score UndefendedMinor  = make_score(10, 10);
-	//const Score TrappedRook      = make_score(90,  0);
-
-	//const Score RookBehindKing   = make_score(20, 30);
-	//const Score RookDubRook      = make_score(10, 10);
-	//const Score RookKnight       = make_score(15, 15);
-	//const Score RookCannon       = make_score(20, 10);
-
-	//const Score KnightEdgeRook   = make_score(5, 15);
-
-
 
 	// The SpaceMask[Color] contains the area of the board which is considered
 	// by the space evaluation. In the middle game, each side is given a bonus
@@ -263,6 +263,11 @@ namespace {
 
 	template<Color Us>
 	int evaluate_space(const Position& pos, const EvalInfo& ei);  
+
+	template<Color Us, bool Trace>
+	Score evaluate_structure(const Position& pos, const EvalInfo& ei) ;
+	template<PieceType Piece,Color Us, bool Trace>
+	Score evaluate_piece_structure(const Position& pos, const EvalInfo& ei);
 
 	Value interpolate(const Score& v, Phase ph, ScaleFactor sf);
 	Score apply_weight(Score v, Score w);
@@ -419,11 +424,11 @@ namespace {
 		score +=  evaluate_threats<WHITE, Trace>(pos, ei)
 			- evaluate_threats<BLACK, Trace>(pos, ei);
 
-#if 0
+
 		// Evaluate passed pawns, we need full attack information including king
 		score +=  evaluate_passed_pawns<WHITE, Trace>(pos, ei)
 			- evaluate_passed_pawns<BLACK, Trace>(pos, ei);
-#endif
+
 		// Evaluate space for both sides, only in middle-game.
 		if (ei.mi->space_weight())
 		{
@@ -433,7 +438,7 @@ namespace {
 
 
 		// Evaluate piece structure for both sides,
-		//score +=  evaluate_structure<WHITE, Trace>(pos, ei) - evaluate_structure<BLACK, Trace>(pos, ei);
+		score +=  evaluate_structure<WHITE, Trace>(pos, ei) - evaluate_structure<BLACK, Trace>(pos, ei);
 
 		// Scale winning side if position is more drawish that what it appears
 		ScaleFactor sf = eg_value(score) > VALUE_DRAW ? ei.mi->scale_factor(pos, WHITE)
@@ -874,7 +879,7 @@ namespace {
 			if (b)
 				attackUnits += KnightCheck * popcount<CNT_90>(b);
 
-			b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
+			b = pos.attacks_from_pawn_nomask(ksq, Us) & ei.attackedBy[Them][PAWN] & safe;
 			if (b)
 				attackUnits += PawnCheck * popcount<CNT_90>(b);
 
@@ -902,171 +907,18 @@ namespace {
 	template<PieceType Piece,Color Us, bool Trace>
 	Score evaluate_piece_structure(const Position& pos, const EvalInfo& ei) {
 
-		Bitboard b;
-		Square s;
-		Score score = SCORE_ZERO;
+		Value v = VALUE_ZERO;
 
-		const Color Them = (Us == WHITE ? BLACK : WHITE);
-		const Square* pl = pos.list<Piece>(Us);
+        Bitboard b = ei.attackedBy[Us][Piece];
 
-		while ((s = *pl++) != SQ_NONE)
-		{
-			if (Piece == ROOK)
-			{
-
-			}
-			//if( Piece == ROOK )
-			//{            
-			//	//ROOK			 
-			//	{				 
-			//		Bitboard rcb = cannon_control_bb(s, pos.occupied, pos.occupied_rl90);
-			//		if(rcb & pos.pieces(Them,ROOK))
-			//	 {
-			//		 Square rSq = pos.list<ROOK>(Them)[0];
-			//		 if(rcb&rSq)
-			//		 {
-			//			 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
-			//			 {
-			//				 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
-			//				 {
-			//					 score += RookPinRook;
-			//				 }
-			//			 }
-			//		 }
-			//		 else
-			//		 {
-			//			 rSq = pos.list<ROOK>(Them)[1];
-			//			 if(rcb&rSq)
-			//			 {
-			//				 if( !(ei.attackedBy[Them][ALL_PIECES] & rSq) )
-			//				 {
-			//					 if(BetweenBB[s][rSq] & (pos.pieces(Them,KNIGHT) | pos.pieces(Them,CANNON)))
-			//					 {
-			//						 score += RookPinRook;
-			//					 }
-			//				 }
-			//			 }
-			//		 }
-			//	 }
-			// }
-
-
-			//	//铁门栓
-			//	if(file_of(s) == file_of(pos.king_square(Us)))
-			// {
-			//	 score +=  RookBehindKing;
-
-			//	 if( (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
-			//	 {
-			//		 score +=  RookBehindKing;
-			//	 }
-			// }
-
-			//	//霸王车
-			//	if(ei.attackedBy[Us][ROOK] & pos.pieces(Us,ROOK))
-			// {
-			//	 score +=  RookDubRook;
-
-			//	 if((file_of(s) == FILE_D || file_of(s) == FILE_G) && (file_of(pos.king_square(Them)) == FILE_E) && (cannon_file_supper_pin_bb(pos.king_square(Them), pos.occupied_rl90)&pos.pieces(Us,CANNON)))
-			//	 {
-			//		 score +=  RookDubRook;
-			//	 }
-			// }
-			//	//车马
-			//	if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][KNIGHT]))
-			// {
-			//	 score +=  RookKnight;
-			// }
-
-			//	//车炮
-			//	if(ei.kingRing[Them] & (ei.attackedBy[Us][ROOK]&ei.attackedBy[Us][CANNON]))
-			// {
-			//	 score +=  RookCannon;
-			// }
-
-
-			//}
-			//else if(Piece == CANNON)
-			//{
-			//	//king
-			//	if(equal_to_two(BetweenBB[s][pos.king_square(Them)] & pos.pieces()))
-			//	{
-			//		if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,ROOK))
-			//		{
-			//			score +=  CannonKingRook;
-			//			if(ei.attackedBy[Us][ALL_PIECES] & s)
-			//				score +=  CannonKingRook;
-			//		}
-
-			//		if(BetweenBB[s][pos.king_square(Them)] & pos.pieces(Them,KNIGHT))
-			//		{
-			//			score +=  CannonKingKnight;
-			//		}
-			//	}
-
-			//	if(PseudoAttacks[Piece][pos.king_square(Them)] & s)
-			//	{
-			//		if( !(BetweenBB[s][pos.king_square(Them)] & pos.pieces()) )
-			//		{
-			//			//if(in_front_bb(Us,rank_of(s)) & pos.count<ROOK>(Us))
-
-			//			if(pos.count<ROOK>(Us) + pos.count<CANNON>(Us) + pos.count<KNIGHT>(Us) > 0)
-			//			{
-			//				score += ShortGunDistance[ std::max( file_distance(s,pos.king_square(Them)), rank_distance(s,pos.king_square(Them))) ];
-
-			//				int bonus = ShortGunPieceCount[ROOK]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us) + ShortGunPieceCount[CANNON]*pos.count<ROOK>(Us);					
-			//				score += make_score(bonus,bonus);
-			//			}
-
-			//		}				
-			//	}
-			//	//对车的牵制
-			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,ROOK)))
-			//	{
-			//		score += CannonPinRook;
-			//	}
-
-			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
-			//	{
-			//		score += CannonPinKnight;
-			//	}
-
-			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,BISHOP)))
-			//	{
-			//		score += CannonPinBishop;
-			//	}
-
-			//	if((cannon_file_supper_pin_bb(s, pos.occupied_rl90)&pos.pieces(Them,KNIGHT)))
-			//	{
-			//		score += CannonPinRook;
-			//	}
-			//}
-			//else if(Piece == KNIGHT)
-			//{
-			//	if( (file_of(s) == FILE_A && file_bb(FILE_B)&pos.pieces(Them,ROOK)) ||
-			//		(file_of(s) == FILE_I && file_bb(FILE_H)&pos.pieces(Them,ROOK)))
-			//	{
-			//		score -= KnightEdgeRook;
-			//	}
-
-
-			//}
-			//else if(Piece == PAWN)
-			//{
-			//}
-			//else if(Piece == BISHOP)
-			//{
-			//}
-			//else if(Piece == ADVISOR)
-			//{
-			//}
-
+		while(b){
+            v += AttackEnergy[relative_square(Us, pop_lsb(&b))];
 		}
+        v = v*AttackEnergyWeight[Piece];
 
-		//if (Trace)
-		//    Tracing::scores[Us][Piece] = score;
+        Score score= make_score(v, v);
 
-		return score;//apply_weight(score, Weights[PieceStructure]);       
+		return score;    
 
 	}
 
@@ -1077,7 +929,8 @@ namespace {
 
 		score =  evaluate_piece_structure<ROOK, Us, Trace>(pos, ei) 
 			+ evaluate_piece_structure<CANNON, Us, Trace>(pos, ei)
-			+ evaluate_piece_structure<KNIGHT, Us, Trace>(pos, ei);
+			+ evaluate_piece_structure<KNIGHT, Us, Trace>(pos, ei)
+		    + evaluate_piece_structure<PAWN, Us, Trace>(pos, ei);
 
 		if (Trace)
 			Tracing::scores[Us][STRUCTURE] = score;
@@ -1101,46 +954,30 @@ namespace {
 			Square s = pop_lsb(&b);
 
 			//assert(pos.pawn_is_passed(Us, s));
-			int d = 8 -(file_distance(s, pos.king_square(Them)) + rank_distance(s, pos.king_square(Them)));
-
-			int r = int(relative_rank(Us, s) - RANK_3);
-			int rr = r * (r - 1);
+			int d = 10 -std::max(file_distance(s, pos.king_square(Them)) , rank_distance(s, pos.king_square(Them)));
 
 			if(relative_rank(Us, s) == RANK_9)
 			{
-				r = 0;
-				rr= 0;
+				d = 0;				
 			}
 
 			// Base bonus based on rank
-			Value mbonus = Value(17 * rr);
-			Value ebonus = Value(7 * (rr + r + 1));
-
-			if (rr)
-			{
-				Square blockSq = s + pawn_push(Us);
-
-				// Adjust bonus based on kings proximity
-				ebonus +=  Value(square_distance(pos.king_square(Them), blockSq) * 5 * rr)
-					- Value(square_distance(pos.king_square(Us  ), blockSq) * 2 * rr);
-				ebonus +=  Value(std::max(file_distance(pos.king_square(Them), blockSq),rank_distance(pos.king_square(Them), blockSq)) * 5 * rr);
-
-			} // rr != 0
+			Value mbonus = Value(d);
+			Value ebonus = Value(2*d);
 
 			// Increase the bonus if the passed pawn is supported by a friendly pawn
 			// on the same rank and a bit smaller if it's on the previous rank.
 			supportingPawns = pos.pieces(Us, PAWN) & adjacent_files_bb(file_of(s));
 			if (supportingPawns & rank_bb(s))
-				ebonus += Value(r * 10);
+				ebonus += Value(d * 2);
 
 			else if (supportingPawns & rank_bb(s - pawn_push(Us)))
-				ebonus += Value(r * 5);
+				ebonus += Value(d);
 
+			
+			//ebonus -= Value(d*2)*pos.count<ADVISOR>(Them);
 
-			if(pos.count<ADVISOR>(Them) == 0)
-				ebonus += Value(r * 10);
-
-			if (pos.count<ALL_PIECES>(  Us) - pos.count<PAWN>(  Us) - pos.count<BISHOP>(  Us) - pos.count<ADVISOR>(  Us)>
+			if (pos.count<ALL_PIECES>(  Us) - pos.count<PAWN>(  Us) - pos.count<BISHOP>(  Us) - pos.count<ADVISOR>(  Us)<
 				pos.count<ALL_PIECES>(Them) - pos.count<PAWN>(Them) - pos.count<BISHOP>(Them) - pos.count<ADVISOR>(Them))
 				ebonus += ebonus / 4;
 

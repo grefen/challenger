@@ -676,7 +676,7 @@ namespace {
         &&  eval - futility_margin(depth, (ss-1)->futilityMoveCount) >= beta
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
         &&  abs(eval) < VALUE_KNOWN_WIN
-        &&  pos.non_pawn_material(pos.side_to_move()))
+        &&  pos.attack_material(pos.side_to_move())/*pos.non_pawn_material(pos.side_to_move())*/)
         return eval - futility_margin(depth, (ss-1)->futilityMoveCount);
 
     // Step 8. Null move search with verification search (is omitted in PV nodes)
@@ -685,7 +685,7 @@ namespace {
         &&  depth >= 2 * ONE_PLY
         &&  eval >= beta
         &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
-        &&  pos.non_pawn_material(pos.side_to_move()))
+        &&  pos.attack_material(pos.side_to_move())/*pos.non_pawn_material(pos.side_to_move())*/)
     {
         ss->currentMove = MOVE_NULL;
 

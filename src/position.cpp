@@ -335,8 +335,11 @@ void Position::set(const string& fenStr, bool isChess960, Thread* th) {
   st->psq = compute_psq_score();
   st->npMaterial[WHITE] = compute_non_pawn_material(WHITE);
   st->npMaterial[BLACK] = compute_non_pawn_material(BLACK);
+  st->npAttackMaterial[WHITE] = compute_attack_material(WHITE);
+  st->npAttackMaterial[BLACK] = compute_attack_material(BLACK);
+
   st->checkersBB = attackers_to(king_square(sideToMove)) & pieces(~sideToMove);
-  //chess960 = isChess960;
+  
   thisThread = th;
 
   assert(pos_is_ok());
@@ -841,7 +844,7 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   Square to = to_sq(m);
   Piece pc = piece_on(from);
   PieceType pt = type_of(pc);
-  //PieceType capture = type_of(m) == ENPASSANT ? PAWN : type_of(piece_on(to));
+  
   PieceType capture = type_of(piece_on(to));
 
   assert(color_of(pc) == us);
@@ -862,7 +865,15 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
           st->pawnKey ^= Zobrist::psq[them][PAWN][capsq];
       }
       else
-          st->npMaterial[them] -= PieceValue[MG][capture];
+	  {
+		  st->npMaterial[them] -= PieceValue[MG][capture];
+
+		  if (capture == ROOK || capture == CANNON || capture == KNIGHT)
+		  {
+			   st->npAttackMaterial[them] -= PieceValue[MG][capture];
+		  }
+	     
+	  }
 
       // Update board and piece lists
       remove_piece(capsq, them, capture);
@@ -1194,6 +1205,16 @@ Value Position::compute_non_pawn_material(Color c) const {
       value += pieceCount[c][pt] * PieceValue[MG][pt];
 
   return value;
+}
+
+Value Position::compute_attack_material(Color c) const {
+
+	Value value = VALUE_ZERO;
+
+	for (PieceType pt = KNIGHT; pt <= ROOK; ++pt)
+		value += pieceCount[c][pt] * PieceValue[MG][pt];	
+
+	return value;
 }
 
 

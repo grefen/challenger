@@ -148,8 +148,8 @@ enum Value {
 
 
   PawnValueMg   = 89,   PawnValueEg   = 305,
-  BishopValueMg = 244,   BishopValueEg = 289,
-  AdvisorValueMg= 535,   AdvisorValueEg= 435,
+  BishopValueMg = 335,   BishopValueEg = 400,
+  AdvisorValueMg= 400,   AdvisorValueEg= 380,
   KnightValueMg = 802,   KnightValueEg = 865,
   CannonValueMg = 865,   CannonValueEg = 842,
   RookValueMg   = 1891,  RookValueEg   = 2020,
