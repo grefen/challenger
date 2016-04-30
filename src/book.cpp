@@ -50,8 +50,7 @@ namespace {
     Key PolyGlotRandoms[1351];//13*60+1//15*90 + 1
     struct {
       Key psq[14][90];  // [piece][square]
-      Key castle[4];    // [castle right]
-      Key enpassant[8]; // [file]
+
       Key turn;
     } Zobrist;
   } PG = {{
@@ -523,14 +522,6 @@ namespace {
 		//BPAWN,WPAWN,BBISHOP,WBISHOP, BADVISOR, WADVISOR, BKNIGHT,WKNIGHT, BCANNON,WCANNON, BROOK,WROOK, BKING,WKING
         key ^= PG.Zobrist.psq[2 * (type_of(p) - 1) + (color_of(p) == WHITE)][s];
     }
-
-    //b = pos.can_castle(ALL_CASTLES);
-
-    //while (b)
-    //    key ^= PG.Zobrist.castle[pop_lsb(&b)];
-
-    //if (pos.ep_square() != SQ_NONE)
-    //    key ^= PG.Zobrist.enpassant[file_of(pos.ep_square())];
 
     if (pos.side_to_move() == WHITE)
         key ^= PG.Zobrist.turn;

@@ -196,10 +196,8 @@ public:
 private:
   // Initialization helpers (used while setting up a position)
   void clear();
-  //void set_castle_right(Color c, Square rfrom);
 
-  // Helper functions
-  //void do_castle(Square kfrom, Square kto, Square rfrom, Square rto);
+  // Helper functions 
   Bitboard hidden_checkers(Square ksq, Color c) const;
   void put_piece(Square s, Color c, PieceType pt);
   void remove_piece(Square s, Color c, PieceType pt);
@@ -534,8 +532,7 @@ inline bool Position::is_capture_or_promotion(Move m) const {
 }
 
 inline bool Position::is_capture(Move m) const {
-
-  // Note that castle is coded as "king captures the rook"
+ 
   assert(is_ok(m));
   
   return !is_empty(to_sq(m));

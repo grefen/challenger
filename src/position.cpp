@@ -1117,7 +1117,7 @@ void Position::clear() {
 
 Key Position::compute_key() const {
 
-  Key k = 0;//Zobrist::castle[st->castleRights];
+  Key k = 0;
 
   for (Bitboard b = pieces(); b; )
   {
@@ -1315,7 +1315,6 @@ bool Position::pos_is_ok(int* failedStep) const {
   const bool debugNonPawnMaterial = all || false;
   const bool debugPieceCounts     = all || false;
   const bool debugPieceList       = all || false;
-  const bool debugCastleSquares   = all || false;
   const bool debugKingFace        = all || false;
 
   *step = 1;
