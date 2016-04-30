@@ -603,20 +603,6 @@ Move PolyglotBook::probe(const Position& pos, const string& fName, bool pickBest
   if (!move)
       return MOVE_NONE;
 
-  // A PolyGlot book move is encoded as follows:
-  //
-  // bit  0- 5: destination square (from 0 to 63)
-  // bit  6-11: origin square (from 0 to 63)
-  // bit 12-14: promotion piece (from KNIGHT == 1 to QUEEN == 4)
-  //
-  // Castling moves follow "king captures rook" representation. So in case book
-  // move is a promotion we have to convert to our representation, in all the
-  // other cases we can directly compare with a Move after having masked out
-  // the special Move's flags (bit 14-15) that are not supported by PolyGlot.
-  //int pt = (move >> 12) & 7;
-  //if (pt)
-  //    move = make<PROMOTION>(from_sq(move), to_sq(move), PieceType(pt + 1));
-
   // Add 'special move' flags and verify it is legal
   for (MoveList<LEGAL> it(pos); *it; ++it)
       if (move == (*it ^ type_of(*it)))

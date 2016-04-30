@@ -123,8 +123,8 @@ namespace {
 	// by piece type and square (from white's point of view).
 	const Value Outpost[][SQUARE_NB] = {
 		{
-			    //  A     B     C     D     E     F     G     H    I
-				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
+			//  A     B     C     D     E     F     G     H    I
+			V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
 				V(0), V(0), V(0), V(0), V(0), V(0),  V(0), V(0),  V(0),
 				V(0), V(0), V(15),V(0), V(0), V(0),  V(15), V(0),  V(0),
 				V(0), V(0), V(0), V(0), V(15),V(0),  V(0), V(0), V(0),
@@ -909,14 +909,14 @@ namespace {
 
 		Value v = VALUE_ZERO;
 
-        Bitboard b = ei.attackedBy[Us][Piece];
+		Bitboard b = ei.attackedBy[Us][Piece];
 
 		while(b){
-            v += AttackEnergy[relative_square(Us, pop_lsb(&b))];
+			v += AttackEnergy[relative_square(Us, pop_lsb(&b))];
 		}
-        v = v*AttackEnergyWeight[Piece];
+		v = v*AttackEnergyWeight[Piece];
 
-        Score score= make_score(v, v);
+		Score score= make_score(v, v);
 
 		return score;    
 
@@ -930,7 +930,7 @@ namespace {
 		score =  evaluate_piece_structure<ROOK, Us, Trace>(pos, ei) 
 			+ evaluate_piece_structure<CANNON, Us, Trace>(pos, ei)
 			+ evaluate_piece_structure<KNIGHT, Us, Trace>(pos, ei)
-		    + evaluate_piece_structure<PAWN, Us, Trace>(pos, ei);
+			+ evaluate_piece_structure<PAWN, Us, Trace>(pos, ei);
 
 		if (Trace)
 			Tracing::scores[Us][STRUCTURE] = score;
@@ -974,7 +974,7 @@ namespace {
 			else if (supportingPawns & rank_bb(s - pawn_push(Us)))
 				ebonus += Value(d);
 
-			
+
 			//ebonus -= Value(d*2)*pos.count<ADVISOR>(Them);
 
 			if (pos.count<ALL_PIECES>(  Us) - pos.count<PAWN>(  Us) - pos.count<BISHOP>(  Us) - pos.count<ADVISOR>(  Us)<

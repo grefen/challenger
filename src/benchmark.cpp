@@ -1,20 +1,20 @@
 /*
-  Challenger, a UCI chess playing engine derived from Stockfish
-  
-  Copyright (C) 2013-2017 grefen
+Challenger, a UCI chess playing engine derived from Stockfish
 
-  Challenger is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+Copyright (C) 2013-2017 grefen
 
-  Challenger is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+Challenger is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Challenger is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <fstream>
@@ -45,7 +45,7 @@ static const char* Defaults[] = {
 	"rnbakabnr/9/4c4/p3p1C1p/9/9/P1P1c1P1P/1C7/9/RNBAKABNR b - - 0 4",
 	"r1bakabnr/9/2n4c1/p1p3p1p/4C4/9/P1P1c1P1P/6C2/9/RNBAKABNR b - - 3 4",
 	"3ak4/9/9/r8/4R4/4C4/9/9/9/4K4 b - - 0 1",
-    "4k4/2P6/4R4/9/9/9/9/9/9/4K4 b - - 0 1",
+	"4k4/2P6/4R4/9/9/9/9/9/9/4K4 b - - 0 1",
 	"4k4/9/4R4/4C4/9/9/9/9/9/4K4 b - - 0 1",
 	"4k4/4C4/4C4/9/9/9/9/9/9/4K4 b - - 0 1",
 	"4k4/2N6/2rr5/4p4/9/9/9/9/9/4K4 b - - 0 1",
@@ -53,7 +53,7 @@ static const char* Defaults[] = {
 	"3ak4/9/9/4C4/9/3p5/2n6/3pC4/9/4K4 b - - 0 1",
 	"4k4/9/c8/4C4/9/c8/9/4C4/9/4K4 b - - 0 1",
 	"4k4/9/9/4C4/9/c8/9/4C4/9/4K4 b - - 0 1",
-    "4k4/9/9/4C4/9/9/9/4C4/9/4K4 b - - 0 1",
+	"4k4/9/9/4C4/9/9/9/4C4/9/4K4 b - - 0 1",
 	"9/2N1k4/9/9/4N4/9/9/9/9/c1B1K4 w - - 0 1",
 	"9/4k4/5N3/3N5/9/9/4c4/4B4/9/3K5 b - - 8 161",
 	"9/2Nck4/9/9/4N4/9/9/4B4/9/3K5 w - - 9 161",
@@ -89,87 +89,87 @@ static const char* Defaults[] = {
 
 void benchmark(const Position& current, istream& is) {
 
-  string token;
-  Search::LimitsType limits;
-  vector<string> fens;
+	string token;
+	Search::LimitsType limits;
+	vector<string> fens;
 
-  // Assign default values to missing arguments
-  string ttSize    = (is >> token) ? token : "32";
-  string threads   = (is >> token) ? token : "1";
-  string limit     = (is >> token) ? token : "12";
-  string fenFile   = (is >> token) ? token : "default";
-  string limitType = (is >> token) ? token : "depth";
+	// Assign default values to missing arguments
+	string ttSize    = (is >> token) ? token : "32";
+	string threads   = (is >> token) ? token : "1";
+	string limit     = (is >> token) ? token : "12";
+	string fenFile   = (is >> token) ? token : "default";
+	string limitType = (is >> token) ? token : "depth";
 
-  Options["Hash"]    = ttSize;
-  Options["Threads"] = threads;
-  TT.clear();
+	Options["Hash"]    = ttSize;
+	Options["Threads"] = threads;
+	TT.clear();
 
-  if (limitType == "time")
-      limits.movetime = 1000 * atoi(limit.c_str()); // movetime is in ms
+	if (limitType == "time")
+		limits.movetime = 1000 * atoi(limit.c_str()); // movetime is in ms
 
-  else if (limitType == "nodes")
-      limits.nodes = atoi(limit.c_str());
+	else if (limitType == "nodes")
+		limits.nodes = atoi(limit.c_str());
 
-  else if (limitType == "mate")
-      limits.mate = atoi(limit.c_str());
+	else if (limitType == "mate")
+		limits.mate = atoi(limit.c_str());
 
-  else
-      limits.depth = atoi(limit.c_str());
+	else
+		limits.depth = atoi(limit.c_str());
 
-  fenFile = "default";
-  
-  if (fenFile == "default")
-      fens.assign(Defaults, Defaults + sizeof(Defaults)/sizeof(Defaults[0]));
+	fenFile = "default";
 
-  else if (fenFile == "current")
-      fens.push_back(current.fen());
+	if (fenFile == "default")
+		fens.assign(Defaults, Defaults + sizeof(Defaults)/sizeof(Defaults[0]));
 
-  else
-  {
-      string fen;
-      ifstream file(fenFile.c_str());
+	else if (fenFile == "current")
+		fens.push_back(current.fen());
 
-      if (!file.is_open())
-      {
-          cerr << "Unable to open file " << fenFile << endl;
-          return;
-      }
+	else
+	{
+		string fen;
+		ifstream file(fenFile.c_str());
 
-      while (getline(file, fen))
-          if (!fen.empty())
-              fens.push_back(fen);
+		if (!file.is_open())
+		{
+			cerr << "Unable to open file " << fenFile << endl;
+			return;
+		}
 
-      file.close();
-  }
+		while (getline(file, fen))
+			if (!fen.empty())
+				fens.push_back(fen);
 
-  int64_t nodes = 0;
-  Search::StateStackPtr st;
-  Time::point elapsed = Time::now();
+		file.close();
+	}
 
-  for (size_t i = 0; i < fens.size(); ++i)
-  {
-      Position pos(fens[i], Options["UCI_Chess960"], Threads.main());
+	int64_t nodes = 0;
+	Search::StateStackPtr st;
+	Time::point elapsed = Time::now();
 
-      cerr << "\nPosition: " << i + 1 << '/' << fens.size() << endl;
+	for (size_t i = 0; i < fens.size(); ++i)
+	{
+		Position pos(fens[i], Options["UCI_Chess960"], Threads.main());
 
-      if (limitType == "perft")
-      {
-          size_t cnt = Search::perft(pos, limits.depth * ONE_PLY);
-          cerr << "\nPerft " << limits.depth  << " leaf nodes: " << cnt << endl;
-          nodes += cnt;
-      }
-      else
-      {
-          Threads.start_thinking(pos, limits, vector<Move>(), st);
-          Threads.wait_for_think_finished();
-          nodes += Search::RootPos.nodes_searched();
-      }
-  }
+		cerr << "\nPosition: " << i + 1 << '/' << fens.size() << endl;
 
-  elapsed = Time::now() - elapsed + 1; // Assure positive to avoid a 'divide by zero'
+		if (limitType == "perft")
+		{
+			size_t cnt = Search::perft(pos, limits.depth * ONE_PLY);
+			cerr << "\nPerft " << limits.depth  << " leaf nodes: " << cnt << endl;
+			nodes += cnt;
+		}
+		else
+		{
+			Threads.start_thinking(pos, limits, vector<Move>(), st);
+			Threads.wait_for_think_finished();
+			nodes += Search::RootPos.nodes_searched();
+		}
+	}
 
-  cerr << "\n==========================="
-       << "\nTotal time (ms) : " << elapsed
-       << "\nNodes searched  : " << nodes
-       << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+	elapsed = Time::now() - elapsed + 1; // Assure positive to avoid a 'divide by zero'
+
+	cerr << "\n==========================="
+		<< "\nTotal time (ms) : " << elapsed
+		<< "\nNodes searched  : " << nodes
+		<< "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
 }

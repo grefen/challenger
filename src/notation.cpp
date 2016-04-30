@@ -92,13 +92,7 @@ const string move_to_uci(Move m, bool chess960) {
   if (m == MOVE_NULL)
       return "0000";
 
-  //if (type_of(m) == CASTLE && !chess960)
-  //    to = (to > from ? FILE_G : FILE_C) | rank_of(from);
-
   string move = square_to_string(from) + square_to_string(to);
-
-  //if (type_of(m) == PROMOTION)
-  //    move += PieceToChar[BLACK][promotion_type(m)]; // Lower case
 
   return move;
 }
@@ -109,7 +103,7 @@ const string move_to_uci(Move m, bool chess960) {
 
 Move move_from_uci(const Position& pos, string& str) {
 
-  if (str.length() == 5) // Junior could send promotion piece in uppercase
+  if (str.length() == 5)
       str[4] = char(tolower(str[4]));
 
   for (MoveList<LEGAL> it(pos); *it; ++it)
@@ -141,9 +135,6 @@ const string move_to_san(Position& pos, Move m) {
   Piece pc = pos.piece_on(from);
   PieceType pt = type_of(pc);
 
-  //if (type_of(m) == CASTLE)
-  //    san = to > from ? "O-O" : "O-O-O";
-  //else
   {
       if (pt != PAWN)
       {
@@ -180,8 +171,7 @@ const string move_to_san(Position& pos, Move m) {
 
       san += square_to_string(to);
 
-      //if (type_of(m) == PROMOTION)
-      //    san += string("=") + PieceToChar[WHITE][promotion_type(m)];
+
   }
 
   if (pos.move_gives_check(m, CheckInfo(pos)))
@@ -192,9 +182,7 @@ const string move_to_san(Position& pos, Move m) {
       pos.undo_move(m);
   } 
 
-  return move_to_chinese(pos, m);
-
-  return san;
+  return move_to_chinese(pos, m);  
 }
 
 std::string move_to_chinese(const Position& pos, Move m)

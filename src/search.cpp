@@ -603,7 +603,7 @@ namespace {
 
         if (    ttValue >= beta
             &&  ttMove
-            && !pos.is_capture_or_promotion(ttMove)
+            && !pos.is_capture(ttMove)
             &&  ttMove != ss->killers[0])
         {
             ss->killers[1] = ss->killers[0];
@@ -844,7 +844,7 @@ moves_loop: // When in check and at SpNode search starts from here
       }
 
       ext = DEPTH_ZERO;
-      captureOrPromotion = pos.is_capture_or_promotion(move);
+      captureOrPromotion = pos.is_capture(move);
       givesCheck = move_is_check(pos,move);//pos.move_gives_check(move, ci);
       dangerous =   givesCheck
                  || pos.is_passed_pawn_push(move);
@@ -1109,7 +1109,7 @@ moves_loop: // When in check and at SpNode search starts from here
 
     // Quiet best move: update killers, history and countermoves
     if (    bestValue >= beta
-        && !pos.is_capture_or_promotion(bestMove)
+        && !pos.is_capture(bestMove)
         && !inCheck)
     {
         if (ss->killers[0] != bestMove)
@@ -1287,8 +1287,7 @@ moves_loop: // When in check and at SpNode search starts from here
     }
 
     // Initialize a MovePicker object for the current position, and prepare
-    // to search the moves. Because the depth is <= 0 here, only captures,
-    // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
+    // to search the moves. Because the depth is <= 0 here, checks (only if depth >= DEPTH_QS_CHECKS) will
     // be generated.
     MovePicker mp(pos, ttMove, depth, History, to_sq((ss-1)->currentMove));
     CheckInfo ci(pos);
@@ -1306,7 +1305,7 @@ moves_loop: // When in check and at SpNode search starts from here
           && !InCheck
           && !givesCheck
           &&  move != ttMove
-          /*&&  type_of(move) != PROMOTION*/
+         
           &&  futilityBase > -VALUE_KNOWN_WIN
           && !pos.is_passed_pawn_push(move))
       {
@@ -1340,7 +1339,7 @@ moves_loop: // When in check and at SpNode search starts from here
       if (   !PvNode
           && (!InCheck || evasionPrunable)
           &&  move != ttMove
-         /* &&  type_of(move) != PROMOTION*/
+        
           &&  pos.see_sign(move) < 0)
           continue;
 

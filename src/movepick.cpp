@@ -105,10 +105,10 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const HistoryStats&
   {
       stage = QSEARCH_1;
 
-      // Skip TT move if is not a capture or a promotion, this avoids qsearch
+      // Skip TT move if is not a capture , this avoids qsearch
       // tree explosion due to a possible perpetual check or similar rare cases
       // when TT table is full.
-      if (ttm && !pos.is_capture_or_promotion(ttm))
+      if (ttm && !pos.is_capture(ttm))
           ttm = MOVE_NONE;
   }
   else
@@ -164,12 +164,6 @@ void MovePicker::score<CAPTURES>() {
       m = it->move;
       it->score =  PieceValue[MG][pos.piece_on(to_sq(m))]
                  - type_of(pos.piece_moved(m));
-
-      //if (type_of(m) == PROMOTION)
-      //    it->score += PieceValue[MG][promotion_type(m)] - PieceValue[MG][PAWN];
-
-      //else if (type_of(m) == ENPASSANT)
-      //    it->score += PieceValue[MG][PAWN];
   }
 }
 

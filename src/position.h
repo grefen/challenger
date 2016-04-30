@@ -145,7 +145,7 @@ public:
   bool pl_move_is_legal(Move m, Bitboard pinned) const;
   bool is_pseudo_legal(const Move m) const;
   bool is_capture(Move m) const;
-  bool is_capture_or_promotion(Move m) const;
+ 
   bool is_passed_pawn_push(Move m) const;
   Piece piece_moved(Move m) const;
   PieceType captured_piece_type() const;
@@ -524,12 +524,6 @@ inline bool Position::is_chess960() const {
   return chess960;
 }
 
-inline bool Position::is_capture_or_promotion(Move m) const {
-
-  assert(is_ok(m));
- 
-  return !is_empty(to_sq(m));
-}
 
 inline bool Position::is_capture(Move m) const {
  
